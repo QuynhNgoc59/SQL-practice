@@ -1,0 +1,23 @@
+Table: Logs
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| id          | int     |
+| num         | varchar |
++-------------+---------+
+In SQL, id is the primary key for this table.
+id is an autoincrement column starting from 1.
+Find all numbers that appear at least three times consecutively.
+Return the result table in any order.
+
+==> My approach:
+WITH CTE AS (SELECT *
+                  , LAG(num, 1) OVER (ORDER BY id) AS occur_2
+                  , LAG(num, 2) OVER (ORDER BY id) AS occur_3
+FROM Logs)
+
+SELECT DISTINCT num AS ConsecutiveNums 
+FROM CTE 
+WHERE num = occur_2 AND num = occur_3
+
+ 
