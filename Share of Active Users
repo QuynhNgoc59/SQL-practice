@@ -1,0 +1,18 @@
+Calculate the percentage of users who are both from the US and have an 'open' status, as indicated in the fb_active_users table.
+Table: fb_active_users
+user_id	name	status	country
+33	Amanda Leon	open	Australia
+27	Jessica Farrell	open	Luxembourg
+18	Wanda Ramirez	open	USA
+50	Samuel Miller	closed	Brazil
+
+==> My approach:
+with cte as (select country
+                  , count(distinct user_id) as usa_user_count
+                  , (select count (distinct user_id) from fb_active_users) as user_count 
+             from fb_active_users
+             where country = 'USA' 
+                   and status = 'open'
+             group by country)
+select cast((usa_user_count/1.0)/user_count as decimal(20,12))*100 as us_active_share
+from cte
