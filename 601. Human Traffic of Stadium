@@ -1,0 +1,43 @@
+Table: Stadium
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| id            | int     |
+| visit_date    | date    |
+| people        | int     |
++---------------+---------+
+visit_date is the column with unique values for this table.
+Each row of this table contains the visit date and visit id to the stadium with the number of people during the visit.
+As the id increases, the date increases as well.
+
+Write a solution to display the records with three or more rows with consecutive id's, and the number of people is greater than or equal to 100 for each.
+Return the result table ordered by visit_date in ascending order.
+
+==> My approach:
+WITH people_threshold AS (
+    SELECT *
+    FROM Stadium
+    WHERE people >= 100
+)
+, row_index AS (
+    SELECT *
+         , ROW_NUMBER() OVER (ORDER BY id) AS row_num
+    FROM people_threshold
+)
+, date_group AS (
+    SELECT *
+         , id - row_num AS cons_date_group
+    FROM row_index
+)
+, filtered_date_group AS (
+    SELECT cons_date_group
+    FROM date_group
+    GROUP BY cons_date_group
+    HAVING COUNT (*) >= 3
+)
+SELECT id
+     , visit_date 
+     , people
+FROM date_group AS dg
+JOIN filtered_date_group AS fdg 
+ON dg.cons_date_group = fdg.cons_date_group;
