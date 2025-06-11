@@ -1,0 +1,24 @@
+Your team at JPMorgan Chase is preparing to launch a new credit card, and to gain some insights, you're analyzing how many credit cards were issued each month.
+Write a query that outputs the name of each credit card and the difference in the number of issued cards between the month with the highest issuance cards and the lowest issuance. Arrange the results based on the largest disparity.
+
+monthly_cards_issued Table:
+Column Name	Type
+card_name	string
+issued_amount	integer
+issue_month	integer
+issue_year	integer
+
+==> My approach:
+--Min & max amt per card
+WITH min_max_amt AS (
+SELECT card_name
+     , MIN(issued_amount) AS min_amt
+     , MAX(issued_amount) AS max_amt
+FROM monthly_cards_issued
+GROUP BY card_name
+)
+--Difference between min & max amt  
+SELECT card_name
+     , max_amt - min_amt AS difference
+FROM min_max_amt
+ORDER BY difference DESC;
