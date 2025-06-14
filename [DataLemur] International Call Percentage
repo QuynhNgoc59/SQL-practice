@@ -1,0 +1,30 @@
+A phone call is considered an international call when the person calling is in a different country than the person receiving the call.
+What percentage of phone calls are international? Round the result to 1 decimal.
+Assumption:
+The caller_id in phone_info table refers to both the caller and receiver.
+
+phone_calls Table:
+Column Name	Type
+caller_id	integer
+receiver_id	integer
+call_time	timestamp
+
+phone_info Table:
+Column Name	Type
+caller_id	integer
+country_id	integer
+network	integer
+phone_number	string
+
+==> My approach:
+--Number of calls 
+WITH call_count AS (
+SELECT SUM(CASE WHEN pi1.country_id != pi2.country_id THEN 1 ELSE 0 END) AS international_call
+     , (SELECT COUNT(*) FROM phone_calls) AS total_calls
+FROM phone_calls AS pc 
+JOIN phone_info AS pi1 ON pc.caller_id = pi1.caller_id
+JOIN phone_info AS pi2 ON pc.receiver_id = pi2.caller_id
+)
+--% of international phone calls 
+SELECT ROUND(international_call*100.0/ total_calls, 1) AS international_calls_pct
+FROM call_count;
