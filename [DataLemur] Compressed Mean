@@ -1,0 +1,18 @@
+You're trying to find the mean number of items per order on Alibaba, rounded to 1 decimal place using tables which includes information on the count of items in each order (item_count table) and the corresponding number of orders for each item count (order_occurrences table).
+
+items_per_order Table:
+Column Name	Type
+item_count	integer
+order_occurrences	integer
+
+==> My approach:
+--Order and item count 
+WITH order_item_count as (
+SELECT * 
+     , (order_occurrences * item_count) AS num_item
+     , (SELECT SUM(order_occurrences) FROM items_per_order) AS total_order
+FROM items_per_order
+)
+--Mean calculation
+SELECT CAST(SUM(num_item)/ MAX(total_order) AS DECIMAL(20,1)) AS mean
+FROM order_item_count; 
