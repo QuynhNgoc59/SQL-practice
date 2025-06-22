@@ -1,0 +1,13 @@
+Identify returning active users by finding users who made a second purchase within 7 days of any previous purchase. Output a list of these user_ids.
+
+==> My approach:
+--Previous order of each order 
+WITH pre_purchase AS (
+SELECT * 
+     , LAG(created_at) OVER( PARTITION BY user_id ORDER BY created_at ) AS prev_order 
+FROM amazon_transactions
+)
+--Users who made consecutive orders within 7 days
+SELECT DISTINCT user_id
+FROM pre_purchase 
+WHERE DATEDIFF(day, prev_order, created_at) <= 6;
