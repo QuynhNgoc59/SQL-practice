@@ -1,0 +1,17 @@
+Find the review_text that received the highest number of  cool votes.
+Output the business name along with the review text with the highest number of cool votes.
+
+==> My approach:
+WITH cool_vote_rank AS (
+SELECT business_name
+     , review_text
+     , SUM(cool) AS cool_count
+     , DENSE_RANK() OVER(ORDER BY SUM(cool) DESC) AS cool_rank
+FROM yelp_reviews
+GROUP BY business_name
+       , review_text
+)
+SELECT business_name
+     , review_text
+FROM cool_vote_rank
+WHERE cool_rank = 1;
