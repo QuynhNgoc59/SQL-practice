@@ -1,0 +1,6 @@
+Identify the IDs of students who scored exactly at the median for the SAT writing section.
+
+==> My approach:
+SELECT student_id
+FROM sat_scores
+WHERE sat_writing IN (SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY sat_writing ASC) OVER() FROM sat_scores);
