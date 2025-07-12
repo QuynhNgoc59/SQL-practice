@@ -1,0 +1,15 @@
+Calculate the friend acceptance rate for each date when friend requests were sent. A request is sent if action = sent and accepted if action = accepted. If a request is not accepted, there is no record of it being accepted in the table. The output will only include dates where requests were sent and at least one of them was accepted, as the acceptance rate can only be calculated for those dates. Show the results ordered from the earliest to the latest date.
+
+==> My approach:
+with req_cal as (
+select user_id_sender,user_id_receiver, min(date) as date
+     , sum(case when action = 'sent' then 1 else 0 end) as total_sent_req
+     , sum(case when action = 'accepted' then 1 else 0 end) as total_accepted_req
+from fb_friend_requests
+group by user_id_sender,user_id_receiver
+)
+select date
+     , convert(float, sum(total_accepted_req)*1.0/ sum(total_sent_req)) as percentage_acceptance
+from req_cal
+group by date
+order by date ;
