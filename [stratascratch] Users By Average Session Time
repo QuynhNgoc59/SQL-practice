@@ -1,0 +1,20 @@
+Calculate each user's average session time, where a session is defined as the time difference between a page_load and a page_exit. 
+Assume each user has only one session per day. 
+If there are multiple page_load or page_exit events on the same day, use only the latest page_load and the earliest page_exit, ensuring the page_load occurs before the page_exit. 
+Output the user_id and their average session time.
+
+
+==> My approach:
+with time_cal as (
+select user_id
+     , cast(timestamp as date) as session_date
+     , datediff(second, max(case when action = 'page_load' then timestamp end), min(case when action = 'page_exit' then timestamp end)) as session_time 
+from facebook_web_log
+group by user_id
+       , cast(timestamp as date)
+)
+select user_id
+     , sum(session_time)*1.0/ count(*) as avg_session_time
+from time_cal
+where session_time is not null 
+group by user_id;
