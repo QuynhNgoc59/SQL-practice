@@ -1,0 +1,46 @@
+LINK: https://www.namastesql.com/coding-problem/52-loan-repayment?question_type=0&level_id=7A8BBAB6D859DFC1 
+
+You're working for a large financial institution that provides various types of loans to customers. Your task is to analyze loan repayment data to assess credit risk and improve risk management strategies.
+Write an SQL to create 2 flags for each loan as per below rules. Display loan id, loan amount , due date and the 2 flags.
+
+1- fully_paid_flag: 1 if the loan was fully repaid irrespective of payment date else it should be 0.
+2- on_time_flag : 1 if the loan was fully repaid on or before due date else 0.
+Table: loans
++-------------+-----------+
+| COLUMN_NAME | DATA_TYPE |
++-------------+-----------+
+| loan_id     | int       |
+| customer_id | int       |
+| loan_amount | int       |
+| due_date    | date      |
++-------------+-----------+
+Table: payments
++--------------+-----------+
+| COLUMN_NAME  | DATA_TYPE |
++--------------+-----------+
+| amount_paid  | int       |
+| loan_id      | int       |
+| payment_date | date      |
+| payment_id   | int       |
++--------------+-----------+
+
+==> My approach:
+with aggregrated_payment as (
+select p.loan_id      
+     , l.customer_id
+     , sum(p.amount_paid) as total_amt_paid
+     , max(p.payment_date) as latest_payment_date
+from payments as p
+join loans as l
+on l.loan_id = p.loan_id
+group by p.loan_id      
+       , l.customer_id
+)
+select l.loan_id
+     , l.loan_amount
+     , l.due_date
+      , case when (a.total_amt_paid >= l.loan_amount) then 1 else 0 end as fully_paid_flag 
+     , case when (a.total_amt_paid >= l.loan_amount and a.latest_payment_date <= l.due_date) then 1 else 0 end as on_time_flag  
+from aggregrated_payment as a
+join loans as l
+on a.customer_id = l.customer_id;
