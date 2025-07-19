@@ -1,0 +1,36 @@
+LINK: https://www.namastesql.com/coding-problem/1-return-orders-customer-feedback?question_type=0&level_id=7A8BBAB6D859DFC1
+
+Namastekart, an e-commerce company, has observed a notable surge in return orders recently. They suspect that a specific group of customers may be responsible for a significant portion of these returns. To address this issue, their initial goal is to identify customers who have returned more than 50% of their orders. This way, they can proactively reach out to these customers to gather feedback.
+Write an SQL to find list of customers along with their return percent (Round to 2 decimal places), display the output in ascending order of customer name.
+
+Table: orders (primary key : order_id)
++---------------+-------------+
+| COLUMN_NAME   | DATA_TYPE   |
++---------------+-------------+
+| customer_name | varchar(10) |
+| order_date    | date        |
+| order_id      | int         |
+| sales         | int         |
++---------------+-------------+
+
+Table: returns (primary key : order_id)
++-------------+-----------+
+| COLUMN_NAME | DATA_TYPE |
++-------------+-----------+
+| order_id    | int       |
+| return_date | date      |
++-------------+-----------+
+
+==> My approach:
+with return_rate as (
+  select customer_name 
+       , cast(sum(case when return_date is not null then 1 else 0 end)*100/count(distinct o.order_id) as decimal (20,2)) as return_percent 
+from orders as o
+left join returns as r
+on o.order_id = r.order_id
+group by customer_name 
+  )
+select *
+from return_rate
+where return_percent >= 50.00;
+order by customer_name;
