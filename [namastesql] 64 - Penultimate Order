@@ -1,0 +1,45 @@
+LINK: https://www.namastesql.com/coding-problem/64-penultimate-order?question_type=0&level_id=7A8BBAB6D859DFC1
+
+You are a data analyst working for an e-commerce company, responsible for analysing customer orders to gain insights into their purchasing behaviour. 
+Your task is to write a SQL query to retrieve the details of the penultimate order for each customer. 
+However, if a customer has placed only one order, you need to retrieve the details of that order instead, display the output in ascending order of customer name.
+
+Table: orders
++---------------+-------------+
+| COLUMN_NAME   | DATA_TYPE   |
++---------------+-------------+
+| order_id      | int         |
+| order_date    | date        |
+| customer_name | varchar(10) |
+| product_name  | varchar(10) |
+| sales         | int         |
++---------------+-------------+
+
+==> My approach:
+with purchase_order as (
+  select customer_name 
+       , order_id      
+       , order_date    
+       , product_name  
+       , sales
+       , row_number() over(partition by customer_name order by order_date desc) as ordered_purchase
+  from orders
+)
+   , purchase_count as (
+   select customer_name
+        , count(distinct order_id) as num_purchase
+   from orders
+   group by customer_name
+)
+select p1.order_id      
+     , p1.order_date  
+     , p1.customer_name 
+     , p1.product_name  
+     , p1.sales
+from purchase_order as p1
+join purchase_count as p2 on p1.customer_name = p2.customer_name
+where (p2.num_purchase > 1 and p1.ordered_purchase = 2)
+      or 
+      (p2.num_purchase = 1 and p1.ordered_purchase = 1);
+     
+     
