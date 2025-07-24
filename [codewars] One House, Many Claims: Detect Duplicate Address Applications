@@ -1,0 +1,32 @@
+LINK: https://www.codewars.com/kata/686cf5d8ebcff30d8b051b06/train/sql
+
+==> My approach:
+WITH joined_table AS (
+  SELECT 
+    e1.applicant_id,
+    e1.house_no,
+    e1.street_name,
+    CONCAT(e1.house_no, ' ', e1.street_name) AS address_name
+  FROM energy_rebate_applications AS e1
+  JOIN energy_rebate_applications AS e2
+    ON CONCAT(e1.house_no, ' ', e1.street_name) = CONCAT(e2.house_no, ' ', e2.street_name)
+),
+distinct_applicants AS (
+  SELECT DISTINCT applicant_id, house_no, street_name
+  FROM joined_table
+),
+calculated_table AS (
+  SELECT 
+    street_name,
+    house_no,
+    CONCAT(house_no, ' ', street_name) AS address_name,
+    STRING_AGG(CAST(applicant_id AS varchar), ', ' ORDER BY applicant_id) AS app_list,
+    COUNT(applicant_id) AS app_count
+  FROM distinct_applicants
+  GROUP BY street_name, house_no
+)
+SELECT 
+  CONCAT(app_count, ' applications (applicant_ids: ', app_list, ') already filed at ', address_name) AS audit_note
+FROM calculated_table
+WHERE app_count > 1
+ORDER BY app_count DESC, street_name ASC, house_no ASC;
