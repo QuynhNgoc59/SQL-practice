@@ -1,0 +1,17 @@
+LINK: https://datalemur.com/questions/teams-power-users
+
+==> My approach:
+
+WITH ranking AS (
+SELECT sender_id
+     , COUNT(message_id) AS message_count
+     , DENSE_RANK() OVER(ORDER BY COUNT( message_id) DESC) AS mess_count_rank
+FROM messages
+WHERE EXTRACT (YEAR FROM sent_date) = 2022
+      AND EXTRACT (MONTH FROM sent_date) = 8
+GROUP BY sender_id
+)
+SELECT sender_id
+     , message_count
+FROM ranking
+WHERE mess_count_rank <= 2;
