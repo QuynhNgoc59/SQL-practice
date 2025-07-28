@@ -1,0 +1,18 @@
+LINK: https://datalemur.com/questions/sql-ibm-db2-product-analytics
+
+==> My approach:
+WITH query_count AS (
+SELECT e.employee_id
+     , COUNT(q.query_id) AS unique_queries
+FROM employees AS e
+LEFT JOIN queries AS q
+     ON e.employee_id = q.employee_id
+        AND q.query_starttime >= '07/01/2023 00:00:00' 
+        AND query_starttime < '10/01/2023 00:00:00'
+GROUP BY e.employee_id
+ORDER BY e.employee_id
+)
+SELECT unique_queries
+     , COUNT(DISTINCT employee_id) AS employee_count
+FROM query_count
+GROUP BY unique_queries;
