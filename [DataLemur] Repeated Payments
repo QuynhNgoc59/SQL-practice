@@ -1,0 +1,22 @@
+LINK: https://datalemur.com/questions/repeated-payments
+
+==> My approach:
+WITH repeated_trans AS (
+SELECT merchant_id
+     , credit_card_id
+     , transaction_timestamp
+     , amount
+     , CASE WHEN (EXTRACT(EPOCH FROM transaction_timestamp - LAG(transaction_timestamp) OVER (PARTITION BY merchant_id, credit_card_id, amount ORDER BY transaction_timestamp))/ 60 <= 10)
+            THEN 'repeated'
+            ELSE NULL
+            END AS is_repeated
+FROM transactions
+GROUP BY transaction_id  
+       , merchant_id
+       , credit_card_id
+       , transaction_timestamp
+       , amount
+ORDER BY merchant_id, credit_card_id
+)
+SELECT COUNT(is_repeated) AS payment_count
+FROM repeated_trans;
