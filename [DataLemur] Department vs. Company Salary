@@ -1,0 +1,26 @@
+LINK: https://datalemur.com/questions/sql-department-company-salary-comparison
+
+==> My approach:
+WITH salary_cal AS (
+SELECT department_id
+     , payment_date
+     , AVG(amount) AS avg_salary_dept
+     , (SELECT AVG(amount)
+        FROM salary
+        WHERE DATE_PART('year', payment_date) = 2024
+              AND DATE_PART('month', payment_date) = 3) AS avg_salary
+FROM employee AS e
+JOIN salary AS s
+ON e.employee_id = s.employee_id
+WHERE DATE_PART('year', s.payment_date) = 2024
+AND DATE_PART('month', s.payment_date) = 3
+GROUP BY department_id
+       , payment_date
+)
+SELECT department_id
+     , TO_CHAR(payment_date, 'MM-YYYY') AS payment_date
+     , CASE WHEN avg_salary_dept < avg_salary THEN 'lower'
+WHEN avg_salary_dept > avg_salary THEN 'higher'
+ELSE 'same'
+END AS comparison
+FROM salary_cal;
