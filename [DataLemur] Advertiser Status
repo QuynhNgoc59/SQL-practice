@@ -1,0 +1,22 @@
+LINK: https://datalemur.com/questions/updated-status
+
+==> My approach:
+
+WITH customer_category AS 
+(
+SELECT COALESCE(a.user_id, d.user_id) AS user_id
+     , a.status 
+     , d.paid
+     , CASE WHEN d.paid IS NULL THEN 'CHURN'
+            WHEN d.paid IS NOT NULL AND status IN ('NEW','EXISTING','RESURRECT') THEN 'EXISTING'
+            WHEN paid IS NOT NULL AND status = 'CHURN' THEN 'RESURRECT'
+            WHEN paid IS NOT NULL AND status IS NULL THEN 'NEW'
+       END AS new_status
+FROM advertiser AS a
+FULL OUTER JOIN daily_pay AS d 
+     ON a.user_id	 = d.user_id	
+)
+SELECT user_id
+     , new_status
+FROM customer_category
+ORDER BY user_id;
