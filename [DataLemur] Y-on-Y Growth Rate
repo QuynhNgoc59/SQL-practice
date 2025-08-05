@@ -1,0 +1,24 @@
+LINK: https://datalemur.com/questions/yoy-growth-rate
+
+==> My approach:
+WITH current_spend AS (
+SELECT DATE_PART('year', transaction_date) AS year
+     , product_id
+     , SUM(spend) AS total_spend
+FROM user_transactions
+GROUP BY DATE_PART('year', transaction_date) 
+       , product_id
+)
+, prev_spend AS (
+SELECT year
+     , product_id
+     , total_spend AS curr_year_spend
+     , LAG(total_spend) OVER(PARTITION BY product_id ORDER BY year) AS prev_year_spend
+FROM current_spend
+)
+SELECT year
+     , product_id
+     , curr_year_spend
+     , prev_year_spend
+     , ROUND((curr_year_spend - prev_year_spend)/ prev_year_spend*100, 2) AS yoy_rate
+FROM prev_spend;
