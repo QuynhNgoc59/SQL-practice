@@ -1,0 +1,19 @@
+LINK: https://datalemur.com/questions/user-retention
+
+==> My approach:
+WITH active_user_Jun AS (
+SELECT * 
+FROM user_actions
+WHERE DATE_PART('month', event_date) = 6
+)
+, active_user_Jul AS (
+SELECT * 
+FROM user_actions
+WHERE DATE_PART('month', event_date) = 7
+)
+SELECT DATE_PART('month', u2.event_date) AS month
+     , COUNT(DISTINCT u1.user_id) AS monthly_active_users
+FROM active_user_Jun AS u1
+JOIN active_user_Jul AS u2
+     ON u1.user_id = u2.user_id
+GROUP BY DATE_PART('month', u2.event_date);
