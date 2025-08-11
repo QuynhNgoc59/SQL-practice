@@ -1,0 +1,25 @@
+LINK: https://datalemur.com/questions/histogram-users-purchases
+
+==> My approach:
+WITH latest_purchase AS
+(
+SELECT user_id
+, MAX(transaction_date) AS latest_purchase_date
+FROM user_transactions
+GROUP BY user_id
+)
+, joined_tables AS
+(
+SELECT *
+FROM latest_purchase AS l
+JOIN user_transactions AS u
+ON l.latest_purchase_date = u.transaction_date
+AND l.user_id = u.user_id
+)
+SELECT transaction_date
+     , user_id
+     , COUNT(*) AS purchase_count
+FROM joined_tables
+GROUP BY transaction_date
+       , user_id
+ORDER BY transaction_date;
