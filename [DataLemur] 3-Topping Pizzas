@@ -1,0 +1,21 @@
+LINK: https://datalemur.com/questions/pizzas-topping-cost
+
+==> My approach:
+
+WITH combination AS (
+SELECT p1.topping_name AS name1
+     , p1.ingredient_cost as cost1
+     , p2.topping_name AS name2
+     , p2.ingredient_cost as cost2
+     , p3.topping_name AS name3
+     , p3.ingredient_cost as cost3
+FROM pizza_toppings AS p1 
+JOIN pizza_toppings AS p2
+  ON p2.topping_name > p1.topping_name 
+JOIN pizza_toppings AS p3
+  ON p3.topping_name > p2.topping_name 
+  )
+SELECT name1 || ',' || name2 || ',' || name3 AS pizza
+     , cost1 + cost2 + cost3 AS total_cost
+FROM combination
+ORDER BY total_cost DESC, pizza;
