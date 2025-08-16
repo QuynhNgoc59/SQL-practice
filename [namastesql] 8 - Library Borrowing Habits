@@ -1,0 +1,10 @@
+LINK: https://www.namastesql.com/coding-problem/8-library-borrowing-habits?question_type=0&level_id=82791DA7C5D439BA
+
+==> My approach:
+select b1.BorrowerName
+     , STRING_AGG(b2.BookName, ', ' ORDER BY b2.BookName) AS borrowedbooks              
+FROM Borrowers AS b1
+JOIN Books AS b2
+ON b1.BookID = b2.BookID
+GROUP BY b1.BorrowerName
+ORDER BY BorrowerName; 
