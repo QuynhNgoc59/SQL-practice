@@ -1,0 +1,11 @@
+LINK: https://www.namastesql.com/coding-problem/38-product-reviews?question_type=0&level_id=82791DA7C5D439BA
+
+==> My approach:
+SELECT * 
+FROM product_reviews
+WHERE (
+    LOWER(review_text) COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%excellent%' 
+    OR LOWER(review_text) COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%amazing%'
+    )
+      AND LOWER(review_text) NOT LIKE '%not excellent%'
+      AND LOWER(review_text) NOT LIKE '%not amazing%';
