@@ -1,0 +1,12 @@
+LINK: https://www.namastesql.com/coding-problem/71-department-average-salary?question_type=0&level_id=82791DA7C5D439BA
+
+==> My approach:
+SELECT d.department_name  
+     , ROUND(AVG(e.salary*1.0), 2) AS average_salary 
+FROM employees AS e
+JOIN departments AS d
+ON e.department_id = d.department_id 
+GROUP BY d.department_id 
+       , d.department_name
+HAVING COUNT(employee_id) > 2
+ORDER BY average_salary DESC;
