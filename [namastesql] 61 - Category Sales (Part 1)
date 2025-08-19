@@ -1,0 +1,9 @@
+LINK: https://www.namastesql.com/coding-problem/61-category-sales-part-1?question_type=0&level_id=82791DA7C5D439BA
+
+==> My approach:
+SELECT category    
+     , SUM(amount) AS total_sales
+FROM sales
+WHERE DATEPART(WEEKDAY, order_date) BETWEEN 2 AND 6 
+      AND (MONTH(order_date) = 2 AND YEAR(order_date) = 2022)
+GROUP BY category;
