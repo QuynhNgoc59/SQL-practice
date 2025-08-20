@@ -1,0 +1,17 @@
+LINK: https://www.namastesql.com/coding-problem/2-product-category?question_type=0&level_id=82791DA7C5D439BA
+
+==> My approach:
+WITH product_cat AS 
+(
+  SELECT *
+     , CASE WHEN price < 100 THEN 'Low Price'
+            WHEN price > 100 AND price < 500 THEN 'Medium Price'
+            ELSE 'High  Price'
+       END AS category     
+FROM products
+)
+SELECT category
+     , COUNT(*) AS no_of_products
+FROM product_cat
+GROUP BY category
+ORDER BY no_of_products DESC;
