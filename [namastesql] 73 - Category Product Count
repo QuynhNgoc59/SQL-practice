@@ -1,0 +1,17 @@
+LINK: https://www.namastesql.com/coding-problem/73-category-product-count?question_type=0&level_id=82791DA7C5D439BA
+
+==> My approach:
+WITH split_product AS 
+(
+  SELECT 
+    *
+FROM 
+    categories
+CROSS APPLY 
+    STRING_SPLIT(products, ',')
+)
+SELECT category    
+     , COUNT(*) AS product_count
+FROM split_product
+GROUP BY category    
+ORDER BY product_count;
