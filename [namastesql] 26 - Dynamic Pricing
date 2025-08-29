@@ -1,0 +1,17 @@
+LINK: https://www.namastesql.com/coding-problem/26-dynamic-pricing?question_type=0&level_id=7A8BBAB6D859DFC1
+
+==> My approach:
+WITH date_change AS (
+  SELECT *
+       , ISNULL(LEAD(price_date) OVER (PARTITION BY product_id ORDER BY price_date), '9999-12-31') AS next_price_date
+FROM products 
+  )
+  SELECT d.product_id
+       , SUM(d.price) AS total_sales
+  FROM date_change AS d
+  JOIN orders AS o
+       ON d.product_id = o.product_id  
+       AND (o.order_date >= d.price_date AND o.order_date < d.next_price_date)
+  GROUP BY d.product_id;
+
+  
