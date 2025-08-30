@@ -1,0 +1,26 @@
+LINK: https://www.namastesql.com/coding-problem/14-workaholics-employees?question_type=0&complete_status=0&level_id=92CC513C7F7A5974
+
+==> My approach:
+WITH weekly_type_summary AS (
+    SELECT 
+        emp_id,
+      , DATEPART(YEAR, login) AS work_year
+      , DATEPART(WEEK, login) AS work_week
+        SUM(CASE 
+            WHEN DATEDIFF(MINUTE, login, logout) > 480 
+                 AND DATEDIFF(MINUTE, login, logout) <= 600 THEN 1
+            ELSE 0 END) AS type1_days,
+        SUM(CASE 
+            WHEN DATEDIFF(MINUTE, login, logout) > 600 THEN 1
+            ELSE 0 END) AS type2_days
+    FROM employees
+    GROUP BY emp_id, DATEPART(YEAR, login), DATEPART(WEEK, login)
+)
+  SELECT emp_id
+       , CASE WHEN (type1_days != 0 AND type2_days = 0) THEN '1'
+              WHEN (type1_days = 0 AND type2_days != 0) THEN '2'
+         ELSE 'both'
+         END AS criterian
+  FROM weekly_type_summary;
+  
+  
