@@ -1,0 +1,27 @@
+LINK: https://www.namastesql.com/coding-problem/125-project-budget?question_type=0&complete_status=0&level_id=92CC513C7F7A5974
+
+==> My approach:
+WITH project_info AS (
+  SELECT p.id
+       , p.title
+       , p.budget
+       , DATEDIFF(day, start_date, end_date) AS project_duration
+       , SUM(e.salary) AS total_emp_salary
+  FROM projects AS p
+  JOIN project_employees AS pe 
+  ON p.id = pe.project_id  
+  JOIN employees  AS e
+  ON pe.employee_id = e.id
+  GROUP BY p.id
+         , p.title
+         , p.budget
+         , start_date
+         , end_date
+)
+SELECT title
+     , budget
+     , CASE WHEN ((total_emp_salary)/365)*project_duration > budget THEN 'overbudget' 
+            ELSE 'within budget'
+       END AS label
+FROM project_info
+ORDER BY title;
