@@ -1,0 +1,23 @@
+LINK: https://leetcode.com/problems/product-price-at-a-given-date/?envType=study-plan-v2&envId=top-sql-50
+
+==> My approach:
+WITH OriginalPrice AS (
+SELECT *
+FROM Products
+UNION ALL
+SELECT DISTINCT product_id
+     , 10
+     , '1900-01-01'
+FROM Products
+)
+, DateRange AS (
+SELECT product_id
+     , new_price
+     , change_date AS from_date
+     , ISNULL(LEAD(change_date) OVER (PARTITION BY product_id ORDER BY change_date), '9999-12-31') AS to_date
+FROM OriginalPrice
+)
+SELECT product_id
+     , new_price AS price
+FROM DateRange
+WHERE from_date <= '2019-08-16' AND to_date > '2019-08-16';
