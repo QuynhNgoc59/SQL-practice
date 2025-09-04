@@ -1,0 +1,17 @@
+LINK: redirect.zalo.me/v3/verifyv2/pc?token=OMBtnjf_LWva1F75sXDHOMK7zAlIHWHWPLQWhzb8K6SsMl-fZqrQQ3K8_AA26buxRGIgz68o&continue=https%3A%2F%2Fleetcode.com%2Fproblems%2Fcount-salary-categories%2F%3FenvType%3Dstudy-plan-v2%26envId%3Dtop-sql-50
+
+==> My approach:
+WITH SalaryCategory AS (
+    SELECT *
+         , CASE WHEN income < 20000 THEN 'Low Salary'
+            WHEN income BETWEEN 20000 AND 50000 THEN 'Average Salary'
+            ELSE 'High Salary'
+         END AS category
+FROM Accounts
+)
+SELECT s.category
+     , COUNT(a.account_id)  AS accounts_count 
+FROM Accounts AS a 
+LEFT JOIN SalaryCategory AS s
+    ON a.account_id = s.account_id  
+GROUP BY s.category;
