@@ -1,0 +1,44 @@
+LINK: https://www.namastesql.com/coding-problem/150-employees-current-salary?question_type=0&complete_status=0&level_id=92CC513C7F7A5974
+
+==> My approach:
+WITH OrderedPromotions AS (
+    SELECT 
+        e.id AS employee_id,
+        e.joining_salary,
+        p.promotion_date,
+        p.percent_increase,
+        ROW_NUMBER() OVER (PARTITION BY e.id ORDER BY p.promotion_date) AS rn
+    FROM employees e
+    LEFT JOIN promotions p ON e.id = p.emp_id          
+),
+RecursiveSalary AS (
+    SELECT 
+        employee_id,
+        rn,
+        promotion_date,
+        percent_increase,
+        CAST(joining_salary * (1 + percent_increase / 100.0) AS DECIMAL(10, 1)) AS salary_after_promo
+    FROM OrderedPromotions
+    WHERE rn = 1
+
+    UNION ALL
+  
+    SELECT 
+        p.employee_id,
+        p.rn,
+        p.promotion_date,
+        p.percent_increase,
+        CAST(rs.salary_after_promo * (1 + p.percent_increase / 100.0) AS DECIMAL(10, 1))
+    FROM OrderedPromotions p
+    JOIN RecursiveSalary rs
+      ON p.employee_id = rs.employee_id
+     AND p.rn = rs.rn + 1
+)
+SELECT 
+    e.id AS employee_id,
+    e.name,
+    e.joining_salary,
+    COALESCE(MAX(rs.salary_after_promo), e.joining_salary) AS current_salary
+FROM employees e
+LEFT JOIN RecursiveSalary rs ON e.id = rs.employee_id
+GROUP BY e.id, e.name, e.joining_salary;
