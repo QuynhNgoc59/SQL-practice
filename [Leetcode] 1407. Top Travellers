@@ -1,0 +1,18 @@
+LINK: https://leetcode.com/problems/top-travellers/?envType=problem-list-v2&envId=e55d9ob1
+
+==> My approach:
+WITH DistanceRank AS (
+    SELECT u.id
+         , u.name
+         , COALESCE(SUM(r.distance), 0) AS travelled_distance 
+         , DENSE_RANK() OVER(ORDER BY COALESCE(SUM(r.distance), 0) DESC, u.name) AS distance_rank
+FROM Users AS u 
+LEFT JOIN Rides AS r
+          ON u.id = r.user_id       
+GROUP BY u.id
+       , u.name
+)
+SELECT name
+     , travelled_distance
+FROM DistanceRank
+ORDER BY distance_rank;
