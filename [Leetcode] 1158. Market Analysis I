@@ -1,0 +1,19 @@
+LINK: https://leetcode.com/problems/market-analysis-i/?envType=problem-list-v2&envId=e55d9ob1
+
+==> My approach:
+WITH OrderCalculate AS (
+    SELECT user_id AS buyer_id 
+         , ISNULL(COUNT(DISTINCT o.order_id), 0) AS orders_in_2019  
+    FROM Users AS u 
+    LEFT JOIN Orders  AS o
+        ON u.user_id = o.buyer_id 
+           AND YEAR(o.order_date) = 2019
+    GROUP BY user_id 
+)
+SELECT o.buyer_id
+     , u.join_date  
+     , o.orders_in_2019
+FROM OrderCalculate AS o
+JOIN Users AS u 
+    ON o.buyer_id = u.user_id;
+
