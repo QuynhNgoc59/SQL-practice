@@ -1,0 +1,25 @@
+LINK: https://leetcode.com/problems/the-number-of-employees-which-report-to-each-employee/description/?envType=problem-list-v2&envId=m8baczxh
+
+==> My approach:
+
+WITH ReportCount AS (
+    SELECT e2.reports_to AS employee_id 
+         , e1.name
+         , COUNT(DISTINCT e2.employee_id) AS reports_count 
+    FROM Employees AS e1 
+    JOIN Employees AS e2 
+        ON e1.employee_id = e2.reports_to 
+    GROUP BY e2.reports_to
+           , e1.name
+)
+, AvgAge AS (
+    SELECT reports_to  
+         , ROUND(AVG(age*1.0), 0) AS average_age 
+    FROM Employees
+    GROUP BY reports_to  
+)
+SELECT c.*
+     , a.average_age
+FROM ReportCount AS c
+JOIN AvgAge AS a 
+    ON c.employee_id = a.reports_to;
