@@ -1,0 +1,19 @@
+LINK: https://leetcode.com/problems/friend-requests-ii-who-has-the-most-friends/description/?envType=problem-list-v2&envId=v9r4nua2
+
+==> My approach:
+WITH FriendCount AS (
+    SELECT accepter_id 
+         , COUNT(DISTINCT requester_id) AS requester_count
+    FROM RequestAccepted 
+    GROUP BY accepter_id 
+    UNION ALL
+    SELECT requester_id 
+         , COUNT(DISTINCT accepter_id) AS accepter_count
+    FROM RequestAccepted 
+    GROUP BY requester_id 
+)
+SELECT TOP 1 accepter_id AS id
+     , SUM(requester_count) AS num
+FROM FriendCount
+GROUP BY accepter_id 
+ORDER BY num DESC;
