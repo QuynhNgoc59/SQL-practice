@@ -1,0 +1,20 @@
+LINK: https://leetcode.com/problems/find-students-who-improved/?envType=problem-list-v2&envId=21z3vf9h
+
+==> My approach:
+WITH StudentSCore AS (
+    SELECT *
+         , FIRST_VALUE(score) OVER (PARTITION BY student_id, subject ORDER BY exam_date ) AS first_score 
+         , LAST_VALUE(score) OVER (PARTITION BY student_id, subject ORDER BY exam_date rows between unbounded preceding and unbounded following) AS latest_score  
+         , MIN(exam_date) OVER (PARTITION BY student_id, subject) AS first_exam
+         , MAX(exam_date) OVER (PARTITION BY student_id, subject) AS latest_exam
+    FROM Scores
+)
+SELECT DISTINCT student_id 
+     , subject
+     , first_score
+     , latest_score
+FROM StudentSCore 
+WHERE latest_score > first_score
+    AND first_exam != latest_exam
+ORDER BY student_id 
+       , subject;
