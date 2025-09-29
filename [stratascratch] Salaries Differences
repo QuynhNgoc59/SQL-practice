@@ -1,0 +1,23 @@
+LINK: https://platform.stratascratch.com/coding/10308-salaries-differences?code_type=5
+
+==> My approach:
+WITH MarketingSalary AS (
+    SELECT MAX(salary) AS highest_salary_marketing
+    FROM db_employee AS e  
+    JOIN db_dept AS d   
+    ON e.department_id = d.id
+    WHERE d.department IN ('marketing')
+    )
+, MergedSalary AS (
+    SELECT d.id
+         , MAX(salary) AS highest_salary_engineering
+         , (SELECT highest_salary_marketing
+            FROM MarketingSalary) AS highest_salary_marketing
+    FROM db_employee AS e  
+    JOIN db_dept AS d   
+    ON e.department_id = d.id
+    WHERE d.department IN ('engineering')
+GROUP BY d.id
+)
+SELECT highest_salary_marketing - highest_salary_engineering AS salary_difference
+FROM MergedSalary;
