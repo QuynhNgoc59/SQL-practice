@@ -1,0 +1,8 @@
+LINK: https://platform.stratascratch.com/coding/10353-workers-with-the-highest-salaries/official-solution?code_type=5
+
+==> My approach:
+SELECT TOP 1 WITH TIES worker_title
+FROM worker w
+JOIN title t 
+ON w.worker_id = t. worker_ref_id
+ORDER BY salary DESC;
