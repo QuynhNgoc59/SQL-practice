@@ -1,0 +1,13 @@
+LINK: https://platform.stratascratch.com/coding/2054-consecutive-days?code_type=5
+
+==> My approach:
+WITH ConsecutiveDay AS (
+SELECT *
+     , LEAD(record_date, 1) OVER (PARTITION BY user_id ORDER BY record_date) AS one_next_day
+     , LEAD(record_date, 2) OVER (PARTITION BY user_id ORDER BY record_date) AS two_next_day
+FROM sf_events
+)
+SELECT user_id
+FROM ConsecutiveDay
+WHERE DATEDIFF(DAY, record_date, one_next_day) = 1
+    AND DATEDIFF(DAY, one_next_day, two_next_day) = 1;
