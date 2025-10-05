@@ -1,0 +1,26 @@
+LINK: https://platform.stratascratch.com/coding/10172-best-selling-item/discussion?code_type=5
+
+==> My approach:
+WITH TotalPaid AS (
+SELECT MONTH(invoicedate) AS month 
+     , stockcode
+     , description
+     , SUM(unitprice*quantity) AS total_paid 
+FROM online_retail
+GROUP BY MONTH(invoicedate)
+       , stockcode
+       , description
+)
+, MaxRevenue AS (
+SELECT month
+     , MAX(total_paid) AS total_paid
+FROM TotalPaid
+GROUP BY month
+)
+SELECT m.month  
+     , t.description
+     , m.total_paid
+FROM MaxRevenue AS m 
+JOIN TotalPaid AS t
+ON m.month = t.month
+   AND m.total_paid = t.total_paid;
