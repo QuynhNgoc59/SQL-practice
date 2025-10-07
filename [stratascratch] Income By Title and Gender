@@ -1,0 +1,17 @@
+LINK: https://platform.stratascratch.com/coding/10077-income-by-title-and-gender?code_type=5
+
+==> My approach:
+WITH TotalBonus AS (
+    SELECT worker_ref_id
+         , SUM(bonus) AS total_bonus
+    FROM sf_bonus
+    GROUP BY worker_ref_id 
+)
+SELECT e.employee_title
+     , e.sex
+     , SUM(e.salary + t.total_bonus)/COUNT(DISTINCT e.id) AS avg_compensation
+FROM sf_employee AS e
+JOIN TotalBonus AS t
+ON e.id = t.worker_ref_id
+GROUP BY employee_title
+       , sex;
