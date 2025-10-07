@@ -1,0 +1,11 @@
+LINK: https://platform.stratascratch.com/coding/10090-find-the-percentage-of-shipable-orders?code_type=5
+
+==> My approach:
+SELECT COUNT(DISTINCT o.id)/ (SELECT COUNT (DISTINCT id)*1.0 FROM orders)*100 AS percent_shipable
+FROM orders AS o 
+JOIN customers AS c 
+ON o.cust_id = c.id 
+WHERE c.address IS NOT NULL;
+
+
+
