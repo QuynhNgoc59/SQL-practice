@@ -1,0 +1,13 @@
+LINK: https://platform.stratascratch.com/coding/9781-find-the-rate-of-processed-tickets-for-each-type?code_type=5
+
+==> My approach:
+WITH TicketCount AS (
+SELECT type 
+     , COUNT(DISTINCT complaint_id) AS total_complaint
+     , COUNT(DISTINCT CASE WHEN processed = 'TRUE' THEN complaint_id ELSE NULL END) AS total_processed_complaint
+FROM facebook_complaints
+GROUP BY type
+)
+SELECT type
+     , ROUND(total_processed_complaint*1.0/ total_complaint, 2) AS processed_rate
+FROM TicketCount
