@@ -1,0 +1,16 @@
+LINK: https://platform.stratascratch.com/coding/9897-highest-salary-in-department/solutions?code_type=5
+
+==> My approach:
+WITH HighestSalary AS (
+SELECT department
+     , MAX(salary) AS salary
+FROM employee
+GROUP BY department
+)
+SELECT h.department
+     , e.first_name
+     , h.salary
+FROM HighestSalary AS h  
+JOIN employee AS e 
+ON h.department = e.department 
+   AND h.salary = e.salary;
