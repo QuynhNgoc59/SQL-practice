@@ -1,0 +1,27 @@
+LINK: https://platform.stratascratch.com/coding/10141-apple-product-counts/submissions?code_type=5
+
+==> My approach:
+WITH TotalUser AS (
+SELECT u.language
+     , COALESCE(COUNT(DISTINCT e.user_id), 0) AS n_total_users
+FROM playbook_users AS u
+LEFT JOIN playbook_events AS e  
+ON u.user_id = e.user_id
+GROUP BY u.language
+)
+, TotalAppleUser AS (
+SELECT u.language
+     , COALESCE(COUNT(DISTINCT e.user_id), 0) AS n_apple_users
+FROM playbook_users AS u
+LEFT JOIN playbook_events AS e  
+ON u.user_id = e.user_id
+WHERE device IN ('macbook pro', 'iphone 5s', 'ipad air')
+GROUP BY u.language
+)
+SELECT u1.language
+     , COALESCE(u2.n_apple_users, 0) AS n_apple_users
+     , u1.n_total_users
+FROM TotalUser AS u1 
+LEFT JOIN TotalAppleUser AS u2 
+ON u1.language = u2.language
+ORDER BY n_total_users DESC;
