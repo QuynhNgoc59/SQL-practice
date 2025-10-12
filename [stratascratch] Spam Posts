@@ -1,0 +1,17 @@
+LINK: https://platform.stratascratch.com/coding/10134-spam-posts/solutions?code_type=5
+
+==> My approach:
+WITH PostCount AS (
+SELECT p.post_date
+     , COUNT(DISTINCT CASE WHEN p.post_keywords LIKE '%spam%' THEN  p.post_id ELSE NULL END) AS total_spam_post
+     , COUNT(DISTINCT p.post_id) AS total_post
+FROM facebook_post_views AS v
+LEFT JOIN facebook_posts AS p  
+ON v.post_id = p.post_id
+GROUP BY p.post_date
+)
+SELECT post_date
+     , (total_spam_post*100/total_post) AS spam_share
+FROM PostCount;
+
+
