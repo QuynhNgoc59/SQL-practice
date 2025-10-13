@@ -1,0 +1,22 @@
+LINK: https://platform.stratascratch.com/coding/10182-number-of-streets-per-zip-code?code_type=5
+
+==> My approach:
+WITH StreetName AS (
+SELECT *
+    , CASE WHEN PATINDEX('[0-9]%', business_address) = 1
+          THEN TRIM(
+                SUBSTRING(
+                business_address,
+                CHARINDEX(' ', business_address) + 1,
+                ABS(CHARINDEX(' ', business_address, CHARINDEX(' ', business_address) + 1) - (CHARINDEX(' ', business_address) +1)) --return positive number for records without the 2nd white space
+        ))
+            ELSE LEFT(business_address, CHARINDEX(' ', business_address + ' ') - 1)
+            END AS street_name
+FROM sf_restaurant_health_violations
+)
+SELECT business_postal_code AS postal_code
+     , COUNT(DISTINCT street_name) AS n_streets
+FROM StreetName
+WHERE business_postal_code IS NOT NULL
+GROUP BY business_postal_code
+ORDER BY n_streets DESC, postal_code ASC;
