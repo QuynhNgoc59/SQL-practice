@@ -1,0 +1,32 @@
+LINK: https://platform.stratascratch.com/coding/10304-risky-projects?code_type=5
+
+==> My approach:
+--  calculate member's salary in conrresponding project  -> sum all members per project -> compare w/ budget
+WITH MemberCost AS (
+SELECT e.id AS emp_id
+     , e.salary
+     , p2.id
+     , p2.title
+     , p2.budget
+     , (CAST(salary AS DECIMAL(18, 2))/ 365)*DATEDIFF(day, start_date, end_date) AS member_cost
+FROM linkedin_employees AS e 
+JOIN linkedin_emp_projects AS p1
+    ON e.id = p1.emp_id
+JOIN linkedin_projects AS p2
+    ON p1.project_id = p2.id
+)
+, ProjectCost AS (
+SELECT id
+     , title
+     , budget
+     , CEILING((SUM(member_cost))) AS prorated_employee_expense
+FROM MemberCost
+GROUP BY id
+      , title
+      , budget
+)
+SELECT title
+     , budget
+     , prorated_employee_expense
+FROM ProjectCost
+WHERE budget < prorated_employee_expense;
