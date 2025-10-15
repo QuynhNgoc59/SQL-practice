@@ -1,0 +1,28 @@
+LINK: https://platform.stratascratch.com/coding/2007-rank-variance-per-country?code_type=5
+
+==> My approach:
+--calculate total number of comments per users per country per month per country -> rank country this total comments (2 columns per month) -> compare ranking columns 
+WITH UserComment AS (
+SELECT u.country
+     , FORMAT(c.created_at, 'yyyy-MM') AS year_month
+     , SUM(number_of_comments) AS total_cmt
+FROM fb_active_users AS u
+JOIN fb_comments_count AS c 
+ON u.user_id = c.user_id
+WHERE c.created_at BETWEEN '2019-12-01' AND '2020-01-31'
+GROUP BY u.country
+      , FORMAT(c.created_at, 'yyyy-MM')
+    )
+, Ranking AS (
+SELECT * 
+     , DENSE_RANK() OVER(PARTITION BY year_month ORDER BY total_cmt DESC) AS ranking
+FROM UserComment
+)
+, ImprovedCountry AS (
+SELECT * 
+     , ranking - LAG(ranking) OVER (PARTITION BY country ORDER BY year_month) AS ranking_diff
+FROM Ranking
+) 
+SELECT country
+FROM ImprovedCountry
+WHERE ranking_diff < 0;
