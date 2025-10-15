@@ -1,0 +1,23 @@
+LINK: https://platform.stratascratch.com/coding/10171-find-the-genre-of-the-person-with-the-most-number-of-oscar-winnings?code_type=5
+
+==> My approach:
+
+--Calculate number of oscars by person -> rank these oscar countings -> join with nominee_information to get genre
+WITH OscarCount AS (
+SELECT i.name
+     , COUNT(CASE WHEN n.winner = 'TRUE' THEN n.id ELSE NULL END) AS winning_count
+FROM oscar_nominees AS n 
+JOIN nominee_information AS i 
+ON n.nominee = i.name
+GROUP BY i.name
+)
+, Ranking AS (
+SELECT *
+     , DENSE_RANK() OVER (ORDER BY winning_count DESC) AS ranking
+FROM OscarCount
+)
+SELECT i.top_genre
+FROM Ranking AS r
+JOIN nominee_information AS i 
+ON r.name = i.name
+WHERE r.ranking = 1;
