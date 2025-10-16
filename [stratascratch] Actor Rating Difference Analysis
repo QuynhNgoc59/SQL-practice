@@ -1,0 +1,42 @@
+LINK: https://platform.stratascratch.com/coding/10547-actor-rating-difference-analysis?code_type=5
+
+==> My approach:
+--Get all latest film date per actor (cte1) -> calculat avg rating of all films exclude most recent one per actor (cte2) -> join cte1 with ct2 -> calculate rating diff
+
+WITH LatestReleaseDate1 AS (
+SELECT actor_name
+     , MAX(release_date) AS latest_release_date
+FROM actor_rating_shift
+GROUP BY actor_name
+)
+, LatestReleaseDate2 AS (
+SELECT l.actor_name
+     , CONCAT(a.film_title, '-', l.latest_release_date) AS film_latest_date
+     , a.film_rating AS latest_rating
+FROM LatestReleaseDate1 AS l  
+JOIN actor_rating_shift AS a
+    ON l.actor_name = a.actor_name
+       AND l.latest_release_date = a.release_date
+)
+, AvgRating AS (
+SELECT actor_name
+     , AVG(film_rating) AS avg_rating
+FROM actor_rating_shift 
+WHERE CONCAT(film_title, '-', release_date) NOT IN (SELECT film_latest_date FROM LatestReleaseDate2)
+GROUP BY actor_name
+
+UNION ALL 
+
+SELECT actor_name
+     , AVG(film_rating) AS avg_rating
+FROM actor_rating_shift
+GROUP BY actor_name
+HAVING COUNT (*) = 1 --include actors who only have 1 movie records
+
+)
+SELECT a.*
+     , l.latest_rating
+     , ROUND(l.latest_rating - a.avg_rating, 2) AS rating_difference
+FROM AvgRating AS a 
+JOIN LatestReleaseDate2 AS l 
+     ON a.actor_name = l.actor_name;
