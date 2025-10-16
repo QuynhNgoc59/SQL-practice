@@ -1,0 +1,15 @@
+LINK: https://platform.stratascratch.com/coding/2136-customer-tracking?code_type=5
+
+==> My approach:
+--Caclculate time usage per user per session -> sum all calculated hours per user
+WITH SessionTime AS (
+SELECT * 
+     , CASE WHEN state = 0 THEN DATEDIFF(MINUTE, LAG(timestamp) OVER (PARTITION BY cust_id ORDER BY timestamp), timestamp)
+            ELSE NULL 
+        END AS time_per_session
+FROM cust_tracking
+)
+SELECT cust_id
+     , ROUND(SUM(time_per_session)/60.0, 2) AS total_time
+FROM SessionTime
+GROUP BY cust_id;
