@@ -1,0 +1,24 @@
+LINK: https://platform.stratascratch.com/coding/2029-the-most-popular-client_id-among-users-using-video-and-voice-calls?code_type=5
+
+==> My approach:
+-- Calculate % of listed events over all events per user_id -> filter user_id with this number of at least 50% -> calculate number of users after applying this condition per client_id 
+
+WITH EventCount AS (
+SELECT user_id
+     , COUNT(*) AS event_count
+     , SUM(CASE WHEN event_type IN ('video call received', 'video call sent', 'voice call received', 'voice call sent') THEN 1 ELSE 0 END) AS listed_event_count
+FROM fact_events
+GROUP BY user_id
+)
+, EventPercentage AS (
+SELECT user_id
+     , (listed_event_count*1.0/event_count)*100 AS event_percentage
+FROM EventCount
+)
+SELECT TOP 1 f.client_id
+FROM EventPercentage AS e 
+JOIN fact_events AS f 
+    ON e.user_id = f.user_id
+WHERE event_percentage >= 50
+GROUP BY f.client_id
+ORDER BY COUNT(*) DESC;
