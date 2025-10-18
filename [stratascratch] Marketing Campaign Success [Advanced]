@@ -1,0 +1,42 @@
+LINK: https://platform.stratascratch.com/coding/514-marketing-campaign-success-advanced?code_type=5
+
+==> My approach:
+--Filter out users with only 1 purchase + have multiple orders in the first day + have orders with duplicate products -> Count all remaining user_id
+
+--Order the purchases
+WITH OrderedPurchase AS (
+SELECT * 
+     , DENSE_RANK() OVER (PARTITION BY user_id ORDER BY created_at) AS ordered_purchase
+FROM marketing_campaign
+)
+--Exclude users with multiple orders in the first day + users with only 1 purchase 
+, FilteredUsers1 AS (
+SELECT user_id
+FROM OrderedPurchase
+WHERE ordered_purchase > 1
+GROUP BY user_id
+)
+ --Exclude users with duplicate product_id from first order
+, FirstPurchase AS (
+SELECT * 
+     , CONCAT(user_id, '-', product_id) AS user_product_1st_purchase
+FROM OrderedPurchase
+WHERE ordered_purchase = 1
+)
+, LaterPurchase AS (
+SELECT * 
+FROM OrderedPurchase
+WHERE ordered_purchase != 1
+)
+, FilteredUsers2 AS (
+SELECT user_id
+FROM LaterPurchase 
+WHERE CONCAT(user_id, '-', product_id) NOT IN (SELECT user_product_1st_purchase FROM FirstPurchase)
+)
+, FinalUsers AS (
+SELECT f1.user_id
+FROM FilteredUsers1 AS f1
+JOIN FilteredUsers2 AS f2
+    ON f1.user_id = f2.user_id
+    )
+SELECT COUNT(DISTINCT user_id) FROM FinalUsers;
