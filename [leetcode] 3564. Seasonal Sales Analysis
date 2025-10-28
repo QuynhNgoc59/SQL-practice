@@ -1,0 +1,38 @@
+LINK: https://leetcode.com/problems/seasonal-sales-analysis/description/?envType=problem-list-v2&envId=21z3vf9h
+
+==> My approach:
+-- Identify season of each order -> Calculate revenue & sold quantity of each product_id -> Calculate revenue & sold quantity of each category & season -> Get the maximum total quantity sold of each season 
+
+WITH Season AS (
+    SELECT *
+         , quantity*price AS revenue 
+         , CASE WHEN MONTH(sale_date) IN (12, 1, 2) THEN 'Winter'
+                WHEN MONTH(sale_date) IN (3, 4, 5) THEN 'Spring'
+                WHEN MONTH(sale_date) IN (6, 7, 8) THEN 'Summer'
+                WHEN MONTH(sale_date) IN (9, 10, 11) THEN 'Fall'
+            END AS season  
+    FROM sales 
+)
+, RevAndQty AS (
+    SELECT s.season
+         , p.category 
+         , SUM(quantity) AS total_quantity 
+         , SUM(revenue) AS total_revenue 
+    FROM Season AS s 
+    JOIN products AS p 
+        ON s.product_id = p.product_id 
+    GROUP BY s.season
+           , p.category
+)
+, Ranking AS (
+    SELECT * 
+         , DENSE_RANK() OVER (PARTITION BY season ORDER BY total_quantity DESC, total_revenue DESC) AS category_ranking
+    FROM RevAndQty
+)
+SELECT season 
+     , category 
+     , total_quantity
+     , total_revenue 
+FROM Ranking 
+WHERE category_ranking = 1
+ORDER BY season;
