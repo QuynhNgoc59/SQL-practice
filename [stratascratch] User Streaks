@@ -1,0 +1,39 @@
+LINK: https://platform.stratascratch.com/coding/2131-user-streaks?code_type=5
+
+==> My approach:
+--Filter out duplicate date rows -> Rank date per user -> Identify date group for each streak per user -> Calculate streak length per user -> Rank the streaks -> Filter users within the top 3 highest streaks
+WITH DistinctDate AS (
+SELECT DISTINCT user_id
+     , date_visited
+FROM user_streaks
+WHERE date_visited < '2022-08-11'
+)
+, DateRanking AS (
+SELECT *
+     , RANK() OVER (PARTITION BY user_id ORDER BY date_visited) AS date_ranking
+FROM DistinctDate
+)
+, DateGroup AS (
+SELECT * 
+     , DATEADD(DAY, -date_ranking, date_visited) AS date_group
+FROM DateRanking
+)
+, StreakLength AS (
+SELECT user_id
+     , date_group
+     , COUNT(*) AS streak_length
+FROM DateGroup 
+GROUP BY user_id
+       , date_group
+)
+, StreakRanking AS (
+SELECT user_id
+     , streak_length
+     , DENSE_RANK() OVER(ORDER BY streak_length DESC) AS streak_ranking
+FROM StreakLength
+)
+SELECT user_id
+     , streak_length
+FROM StreakRanking
+WHERE streak_ranking <= 3
+ORDER BY streak_length DESC;
