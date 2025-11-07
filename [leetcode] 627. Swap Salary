@@ -1,0 +1,9 @@
+LINK: https://leetcode.com/problems/swap-salary/?envType=problem-list-v2&envId=v9r4nua2
+TYPE: Easy
+
+==> My approach:
+import pandas as pd
+
+def swap_salary(salary: pd.DataFrame) -> pd.DataFrame:
+    salary['sex'].replace({'m': 'f', 'f': 'm'}, inplace=True)
+    return salary
