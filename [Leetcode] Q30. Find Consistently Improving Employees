@@ -1,0 +1,38 @@
+LINK: https://leetcode.com/problems/find-consistently-improving-employees/description/?envType=problem-list-v2&envId=21z3vf9h
+
+==> My approach:
+WITH RankedReviews AS (
+    SELECT
+        pr.*,
+        ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY review_date DESC) AS rn,
+        LEAD(rating, 1) OVER (PARTITION BY employee_id ORDER BY review_date DESC) AS next_rating1,
+        LEAD(rating, 2) OVER (PARTITION BY employee_id ORDER BY review_date DESC) AS next_rating2,
+        COUNT(*) OVER (PARTITION BY employee_id) AS total_reviews
+    FROM performance_reviews AS pr
+),
+Filtered AS (
+    SELECT *
+    FROM RankedReviews
+    WHERE total_reviews >= 3
+      AND rn <= 3
+),
+Improvement AS (
+    SELECT
+        employee_id,
+        MAX(CASE WHEN rn = 1 THEN rating END) - MIN(CASE WHEN rn = 3 THEN rating END) AS improvement_score
+    FROM Filtered
+    WHERE employee_id IN (
+        SELECT DISTINCT employee_id 
+        FROM Filtered
+        WHERE (rating > next_rating1) AND (next_rating1 > next_rating2)
+    )
+    GROUP BY employee_id
+)
+SELECT 
+    e.employee_id,
+    e.name,
+    i.improvement_score
+FROM Improvement AS i
+JOIN employees AS e ON i.employee_id = e.employee_id
+  WHERE i.improvement_score > 0
+ORDER BY i.improvement_score DESC, e.name ASC;
