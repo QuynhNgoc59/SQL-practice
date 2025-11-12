@@ -1,0 +1,30 @@
+LINK: https://platform.stratascratch.com/coding/10548-top-actor-ratings-by-genre?code_type=5
+
+==> My approach:
+-- Get most frequent genre per actor 
+WITH genreranking AS (
+    SELECT
+        actor_name,
+        genre,
+        AVG(movie_rating) AS avg_rating,
+        DENSE_RANK() OVER (PARTITION BY actor_name ORDER BY COUNT(*) DESC, AVG(movie_rating) DESC) AS genre_ranking
+    FROM top_actors_rating
+    GROUP BY actor_name, genre
+),
+-- Rank the actor by avg_rating
+actorranking AS (
+    SELECT
+        *,
+        DENSE_RANK() OVER (ORDER BY avg_rating DESC) AS actor_rank
+    FROM genreranking
+    WHERE genre_ranking = 1
+)
+SELECT
+    actor_name,
+    genre,
+    avg_rating,
+    actor_rank
+FROM actorranking
+WHERE actor_rank <= 3
+ORDER BY actor_name;
+
