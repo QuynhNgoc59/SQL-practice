@@ -1,0 +1,17 @@
+LINK: https://platform.stratascratch.com/coding/10319-monthly-percentage-difference?code_type=5
+
+==> My approach:
+
+-- Calculate total revenue per month + Get the leading revenue for each month's revenue row
+WITH RevenueByMonth AS (
+SELECT FORMAT(created_at, 'yyyy-MM') AS month
+     , SUM(value) AS total_revenue
+     , LAG(SUM(value)) OVER (ORDER BY FORMAT(created_at, 'yyyy-MM')) AS pre_revenue
+FROM sf_transactions
+GROUP BY FORMAT(created_at, 'yyyy-MM')
+)
+-- Calculate % change in revenue per month
+SELECT month 
+     , ROUND(((total_revenue - pre_revenue)*1.0/ pre_revenue)*100, 2) AS rev_change
+FROM RevenueByMonth
+ORDER BY month;
