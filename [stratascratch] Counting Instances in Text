@@ -1,0 +1,27 @@
+LINK: https://platform.stratascratch.com/coding/9814-counting-instances-in-text?code_type=5
+
+==> My approach:
+--Insert values of 'bull' and 'bear' into rows of each filenmae
+WITH newcolumn AS (
+    SELECT
+        g.*,
+        v.*
+    FROM google_file_store AS g
+    CROSS JOIN (
+        VALUES ('bull'), ('bear')
+    ) AS v (word)
+),
+--Calculate number of occurence of 'bull' and 'bear' within the text
+numcharater AS (
+    SELECT
+        *,
+        (LEN(contents) - LEN(REPLACE(contents, word, ''))) / LEN(word) AS num_occurrence
+    FROM newcolumn
+)
+--Calculate total number of occurence per specific word
+SELECT
+    word,
+    SUM(num_occurrence) AS nentry
+FROM numcharater
+GROUP BY word
+ORDER BY nentry DESC;
