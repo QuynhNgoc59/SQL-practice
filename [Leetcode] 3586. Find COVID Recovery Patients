@@ -1,0 +1,34 @@
+LINK: https://leetcode.com/problems/find-covid-recovery-patients/submissions/1840868447/?envType=problem-list-v2&envId=21z3vf9h
+
+==> My approach:
+--Get first postive & negative result test per patient
+WITH FirstPositive AS (
+    SELECT patient_id
+         , MIN(CASE WHEN result = 'Positive' THEN test_date ELSE NULL END) AS earliest_positive
+    FROM covid_tests
+    WHERE result != 'Inconclusive'
+    GROUP BY patient_id 
+)
+--Filter patients whose negative results are later than positive results
+, FirstNegative AS (
+    SELECT p.patient_id
+         , p.earliest_positive
+         , MIN(CASE WHEN result = 'Negative' THEN test_date ELSE NULL END) AS earliest_negative
+    FROM covid_tests AS n 
+    JOIN FirstPositive AS p
+        ON n.patient_id = p.patient_id
+            AND n.test_date > p.earliest_positive 
+    GROUP BY p.patient_id 
+           , p.earliest_positive
+)
+-- Calculate day difference between postive & negative result
+SELECT n.patient_id
+     , p.patient_name 
+     , p.age
+     , DATEDIFF(day, n.earliest_positive, earliest_negative)  AS recovery_time
+FROM FirstNegative AS n 
+JOIN patients AS p 
+    ON n.patient_id = p.patient_id 
+WHERE n.earliest_negative IS NOT NULL
+ORDER BY recovery_time
+       , patient_name;
