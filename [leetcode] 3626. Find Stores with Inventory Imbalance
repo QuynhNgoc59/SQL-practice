@@ -1,0 +1,49 @@
+LINK: https://leetcode.com/problems/find-stores-with-inventory-imbalance/editorial/?envType=problem-list-v2&envId=21z3vf9h
+
+==> My approach:
+--Get the cheapest & most expensive product per store + filter stores with at least 3 products
+WITH ProducType AS (
+    SELECT s.store_id    
+         , s.store_name  
+         , s.location
+         , MIN(i.price) AS min_price
+         , MAX(i.price) AS max_price
+    FROM inventory AS i 
+    JOIN stores AS s 
+        ON i.store_id = s.store_id     
+    GROUP BY s.store_id    
+           , s.store_name  
+           , s.location
+    HAVING COUNT(*) >= 3
+)
+----Get corresponding name & inventory of each max & min price product
+, ProductInfo AS (
+    SELECT p.* 
+         , i2.product_name AS most_exp_product 
+         , i2.quantity AS max_qty
+         , i1.product_name AS cheapest_product 
+         , i1.quantity AS min_qty
+    FROM ProducType AS p
+    JOIN inventory AS i1
+        ON p.store_id = i1.store_id    
+           AND p.min_price = i1.price
+    JOIN inventory AS i2
+        ON p.store_id = i2.store_id   
+           AND p.max_price = i2.price
+)
+--Filter stores in which qty of the most expensive product > that of the cheapest one
+, FilteredProduct AS (
+    SELECT * 
+    FROM ProductInfo
+    WHERE min_qty > max_qty
+)
+--Calculate the imbalance ratio 
+SELECT store_id 
+     , store_name    
+     , location
+     , most_exp_product 
+     , cheapest_product 
+     , ROUND((min_qty*1.0/ max_qty), 2) AS imbalance_ratio 
+FROM FilteredProduct
+ORDER BY imbalance_ratio DESC
+       , store_name;
