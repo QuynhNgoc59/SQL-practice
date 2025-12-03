@@ -1,0 +1,36 @@
+LINK: https://leetcode.com/problems/find-overbooked-employees/description/?envType=problem-list-v2&envId=21z3vf9h
+
+==> My approach:
+--Adjust date start of the week from Sunday to Monday
+SET DATEFIRST 1; 
+--Calculate total meetings time per employee per week
+WITH MeetingTime AS (
+    SELECT employee_id   
+         , DATEPART(week, meeting_date) AS Week_num
+         , DATEPART(year, meeting_date) AS year_num
+         , SUM(duration_hours) AS total_hour
+    FROM meetings  
+    GROUP BY employee_id   
+           , DATEPART(week, meeting_date)
+           , DATEPART(year, meeting_date)
+    HAVING SUM(duration_hours) > 20
+)
+--Calculate number of meeting-heavy weeks per employee
+, NumHeavyWeek AS (
+    SELECT employee_id
+         , COUNT(*) AS meeting_heavy_weeks 
+    FROM MeetingTime
+    WHERE total_hour > 20 
+    GROUP BY employee_id
+)
+--Get full info
+SELECT n.employee_id 
+     , e.employee_name 
+     , e.department  
+     , n.meeting_heavy_weeks 
+FROM NumHeavyWeek AS n 
+JOIN employees AS e
+    ON n.employee_id = e.employee_id
+WHERE n.meeting_heavy_weeks >= 2
+ORDER BY meeting_heavy_weeks DESC
+       , employee_name;
