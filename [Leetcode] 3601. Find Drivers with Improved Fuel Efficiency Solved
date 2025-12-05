@@ -1,0 +1,41 @@
+LINK: https://leetcode.com/problems/find-drivers-with-improved-fuel-efficiency/submissions/1846420016/?envType=problem-list-v2&envId=21z3vf9h
+
+==> My approach:
+--Caculate number of trips per driver per each half of the year
+WITH FilteredDriver AS (
+    SELECT d.driver_id
+         , d.driver_name 
+         , COUNT(CASE WHEN DATEPART(quarter, t.trip_date) IN (1, 2) THEN t.trip_id ELSE NULL END) AS num_trip_h1
+         , COUNT(CASE WHEN DATEPART(quarter, t.trip_date) IN (3, 4) THEN t.trip_id ELSE NULL END) AS num_trip_h2
+    FROM drivers AS d 
+    JOIN trips AS t 
+        ON d.driver_id = t.driver_id
+    GROUP BY d.driver_id
+           , d.driver_name 
+)
+--Filter drivers who drived in both 2 half of the year + Calculate avg fuel eficiency of the 1st & 2nd half of the year per driver
+, AvgFuelEff AS (
+    SELECT f.driver_id
+         , f.driver_name
+         , ROUND(AVG(CASE WHEN DATEPART(quarter, t.trip_date) IN (1, 2) THEN t.distance_km / t.fuel_consumed ELSE NULL END), 2) AS rounded_avg_fuel_eff_1
+         , ROUND(AVG(CASE WHEN DATEPART(quarter, t.trip_date) IN (3, 4) THEN t.distance_km / t.fuel_consumed ELSE NULL END), 2) AS rounded_avg_fuel_eff_2
+         , AVG(CASE WHEN DATEPART(quarter, t.trip_date) IN (1, 2) THEN t.distance_km / t.fuel_consumed ELSE NULL END) AS avg_fuel_eff_1
+         , AVG(CASE WHEN DATEPART(quarter, t.trip_date) IN (3, 4) THEN t.distance_km / t.fuel_consumed ELSE NULL END) AS avg_fuel_eff_2
+    FROM FilteredDriver AS f 
+    JOIN trips AS t 
+       ON f.driver_id = t.driver_id
+    WHERE f.num_trip_h1 > 0 
+        AND f.num_trip_h2 > 0
+    GROUP BY f.driver_id
+           , f.driver_name
+)
+--Calculate efficiency improvement per driver 
+SELECT driver_id
+     , driver_name 
+     , rounded_avg_fuel_eff_1 AS first_half_avg 
+     , rounded_avg_fuel_eff_2 AS second_half_avg 
+     , ROUND(avg_fuel_eff_2 - avg_fuel_eff_1, 2) AS efficiency_improvement
+FROM AvgFuelEff
+WHERE avg_fuel_eff_2 > avg_fuel_eff_1
+ORDER BY efficiency_improvement DESC,
+         driver_name ;
