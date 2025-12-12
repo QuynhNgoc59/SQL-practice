@@ -1,0 +1,42 @@
+LINK: https://leetcode.com/problems/find-churn-risk-customers/submissions/1852701125/?envType=problem-list-v2&envId=21z3vf9h
+
+==> My approach:
+--Filter customers with at least 1 history downgrade & 60 active days
+WITH FilteredCustomer1 AS (
+    SELECT user_id 
+         , DATEDIFF(day, MIN(event_date), MAX(event_date)) AS days_as_subscriber 
+    FROM subscription_events
+    GROUP BY user_id
+    HAVING SUM(CASE WHEN event_type = 'downgrade' THEN 1 ELSE 0 END) > 0
+          AND DATEDIFF(day, MIN(event_date), MAX(event_date)) >= 60
+    
+),
+--Filter customers with an active subscription & current plan revenue < less than 50% of their historical maximum plan revenue
+EventOrder AS (
+    SELECT *
+         , ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY event_date DESC) AS event_rn
+    FROM subscription_events
+)
+, FilteredCustomer2 AS (
+    SELECT user_id
+         , MAX(monthly_amount) AS max_historical_amount 
+    FROM EventOrder
+    GROUP BY user_id
+    HAVING SUM(CASE WHEN event_type != 'cancel' AND event_rn = 1 THEN 1 ELSE 0 END) > 0
+          AND SUM(CASE WHEN event_rn = 1 THEN monthly_amount END) < SUM(CASE WHEN event_rn != 1 THEN monthly_amount END)*0.5
+)
+--Filter customers meeting all churn risk requirements
+SELECT f1.user_id
+     , e.plan_name AS current_plan
+     , e.monthly_amount AS current_monthly_amount 
+     , f2.max_historical_amount
+     , days_as_subscriber
+FROM FilteredCustomer1 AS f1
+JOIN FilteredCustomer2 AS f2
+   ON f1.user_id = f2.user_id
+JOIN EventOrder AS e 
+   ON f1.user_id = e.user_id 
+   AND f2.user_id = e.user_id 
+   AND e.event_rn = 1
+ORDER BY days_as_subscriber DESC
+       , user_id ;
