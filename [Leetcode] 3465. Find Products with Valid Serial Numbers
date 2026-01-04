@@ -1,0 +1,11 @@
+LINK: https://leetcode.com/problems/find-products-with-valid-serial-numbers/description/?envType=problem-list-v2&envId=vqwaxh5c
+
+==> My approach:
+SELECT *
+FROM products
+WHERE description LIKE '%SN[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]%'
+     AND PATINDEX('%[^A-Za-z0-9]SN[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]%',
+               ' ' + description COLLATE Latin1_General_BIN2) > 0
+     AND description NOT LIKE '%[A-Za-z][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9]%'
+     AND description NOT LIKE '%[A-Za-z]SN[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]%'
+ORDER BY product_id ; 
