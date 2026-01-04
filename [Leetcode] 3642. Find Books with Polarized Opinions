@@ -1,0 +1,37 @@
+LINK: https://leetcode.com/problems/find-books-with-polarized-opinions/description/?envType=problem-list-v2&envId=vqwaxh5c
+
+==> My approach:
+--Calculate highest rating, lowest rating, number of reading sessions, number of ratings <= 4 or >= 4 + Apply filterings
+WITH BookCalculations1 AS (
+    SELECT book_id
+         , SUM(CASE WHEN session_rating >= 4 THEN 1 ELSE 0 END) AS max_extreme_ratings
+         , SUM(CASE WHEN session_rating <= 2 THEN 1 ELSE 0 END) AS min_extreme_ratings
+         , COUNT(DISTINCT session_id) AS num_session
+         , MAX(session_rating) AS highest_rating
+         , MIN(session_rating) AS lowest_rating
+         , COUNT(DISTINCT session_id) AS total_session
+    FROM reading_sessions
+    GROUP BY book_id
+    HAVING COUNT(session_id) >= 5
+        AND (SUM(CASE WHEN session_rating >= 4 THEN 1 ELSE 0 END) > 0
+            AND SUM(CASE WHEN session_rating <= 2 THEN 1 ELSE 0 END) > 0)
+)
+--Calculate rating_spread, polarization_score
+, BookCalculations2 AS (
+    SELECT book_id
+         , max_extreme_ratings
+         , min_extreme_ratings
+         , highest_rating - lowest_rating AS rating_spread
+         , ROUND((max_extreme_ratings + min_extreme_ratings)*1.0/ total_session, 2) AS polarization_score 
+    FROM BookCalculations1
+)
+--Get book infor + apply remaining filterings
+SELECT b2.*
+     , b1.rating_spread
+     , b1.polarization_score
+FROM BookCalculations2 AS b1
+JOIN books AS b2
+    ON b2.book_id = b1.book_id
+WHERE b1.polarization_score >= 0.6
+ORDER BY b1.polarization_score DESC
+       , B2.title DESC ;
