@@ -1,0 +1,40 @@
+LINK: https://leetcode.com/problems/find-emotionally-consistent-users/
+
+==> My approach:
+    --Calculate reactions per user + Filter users with at least 5 diff content reactions
+    WITH NumReaction AS (
+        SELECT user_id
+            , COUNT(*) AS total_reaction
+        FROM reactions
+        GROUP BY user_id
+        HAVING COUNT(CASE WHEN reaction IN ('love', 'like') THEN content_id ELSE 0 END) >= 5
+
+    )
+    --Calculate reactions number per user per reaction type
+    , FilteresUsers AS (
+        SELECT user_id
+            , reaction 
+            , COUNT(*) AS reactions_count_per_type
+        FROM reactions
+        GROUP BY user_id
+            , reaction 
+        
+    )
+    --Calculate % of each reaction type per user
+    , ReactionRate AS (
+        SELECT n.*
+            , f.reaction
+            , f.reactions_count_per_type
+            , ROUND(f.reactions_count_per_type*1.0/ n.total_reaction, 2) AS reaction_ratio 
+        FROM NumReaction AS n 
+        JOIN FilteresUsers AS f
+            ON n.user_id = f.user_id
+    )
+    --Filter user with at least 60% of any reaction type
+    SELECT user_id
+        , FIRST_VALUE(reaction) OVER(PARTITION BY user_id ORDER BY reaction_ratio DESC) AS dominant_reaction
+        , reaction_ratio 
+    FROM ReactionRate
+    WHERE reaction_ratio >= 0.6
+    ORDER BY reaction_ratio DESC 
+        , user_id ;
