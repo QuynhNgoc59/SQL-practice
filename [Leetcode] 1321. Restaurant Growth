@@ -1,0 +1,25 @@
+LINK: https://leetcode.com/problems/restaurant-growth/description/?envType=problem-list-v2&envId=21z3vf9h
+TYPE: Medium
+
+==> My approach:
+--Calculate total amount per day
+WITH DailyAmt AS (
+    SELECT visited_on 
+         , SUM(amount)*1.0 AS amount
+    FROM Customer 
+    GROUP BY visited_on 
+)
+--Calculate avg accumulated amount per day
+    , AvgAccAmt AS (
+        SELECT visited_on
+             , SUM(amount) OVER (ORDER BY visited_on ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS amount  
+             , AVG(amount) OVER (ORDER BY visited_on ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS average_amount 
+             , MIN(visited_on) OVER (ORDER BY visited_on) AS starting_date
+        FROM DailyAmt
+    )
+--Get dates with a full 7-day period from starting date only
+SELECT visited_on 
+     , amount
+     , ROUND(average_amount, 2) AS average_amount 
+FROM AvgAccAmt
+WHERE DATEDIFF(DAY, starting_date, visited_on) >= 6 ;
