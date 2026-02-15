@@ -1,0 +1,52 @@
+LINK: https://leetcode.com/problems/analyze-organization-hierarchy/description/?envType=problem-list-v2&envId=21z8wa8r
+TYPE: Hard
+
+==> My approach:
+--Get orgnization hierachy with level
+WITH org_hierarchy1 AS (
+    SELECT *
+         , 1 AS level 
+    FROM Employees
+    WHERE manager_id IS NULL 
+
+    UNION ALL
+
+    SELECT e.*
+         , o.level + 1
+    FROM Employees AS e 
+    JOIN org_hierarchy1 AS o
+        ON e.manager_id = o.employee_id  
+)
+--Get full org hierachy with all manager-employee branches
+, org_hierarchy2 AS (
+    SELECT employee_id AS manager_id
+         , employee_id
+    FROM Employees 
+
+    UNION ALL 
+
+    SELECT o.manager_id
+         , e.employee_id
+    FROM Employees AS e 
+    JOIN org_hierarchy2 AS o 
+        ON e.manager_id = o.employee_id 
+)
+--Calculate salary & teamsize per manager level
+SELECT o2.manager_id AS employee_id 
+     , o3.employee_name 
+     , o3.level 
+     , COUNT(*) - 1 AS team_size 
+     , SUM(o1.salary) AS budget 
+FROM org_hierarchy2 AS o2 
+JOIN org_hierarchy1 AS o1
+  ON o2.employee_id = o1.employee_id 
+JOIN org_hierarchy1 AS o3
+  ON o2.manager_id = o3.employee_id 
+GROUP BY o2.manager_id 
+       , o3.employee_name 
+       , o3.level 
+ORDER BY o3.level 
+       , SUM(o1.salary) DESC
+       , o3.employee_name ;
+
+
