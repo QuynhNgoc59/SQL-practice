@@ -1,0 +1,25 @@
+LINK: https://leetcode.com/problems/find-users-with-high-token-usage/description/
+
+==> My approach:
+import pandas as pd
+
+--Calculate number of prompts & avg tokens per user + Filter users who made >= 3 prompts
+WITH AggregatedPrompt AS (
+    SELECT user_id
+         , COUNT(*) AS prompt_count
+         , ROUND(AVG(tokens*1.0), 2) AS avg_tokens
+    FROM prompts
+    GROUP BY user_id
+    HAVING COUNT(*) >= 3 
+)
+--Filter users having at least 1 prompt with tokens > avg tokens
+SELECT *
+FROM AggregatedPrompt AS a
+WHERE EXISTS (
+    SELECT 1 
+    FROM prompts AS p
+    WHERE a.user_id = p.user_id
+         AND p.tokens > a.avg_tokens
+)
+ORDER BY a.avg_tokens DESC
+       , a.user_id ;
