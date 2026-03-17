@@ -1,0 +1,20 @@
+LINK: https://platform.stratascratch.com/coding/10322-finding-user-purchases?code_type=5
+
+==> My approach:
+--Identify the first purchase per user_id
+WITH FirstPurchase AS (
+SELECT user_id
+     , created_at
+     , id
+     , ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY created_at) AS order_rn
+FROM amazon_transactions
+)
+--Find the purchase having the 7-day gap from the first purchase per user_id
+SELECT DISTINCT f.user_id
+FROM FirstPurchase AS f 
+JOIN amazon_transactions AS a 
+    ON f.user_id = a.user_id
+      AND f.id != a.id
+      AND DATEDIFF(day, f.created_at, a.created_at) <= 7
+      AND f.created_at != a.created_at
+WHERE f.order_rn = 1 ;
