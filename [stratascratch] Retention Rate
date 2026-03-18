@@ -1,0 +1,34 @@
+LINK: https://platform.stratascratch.com/coding/2053-retention-rate?code_type=5
+
+==> My approach:
+--Get active users in Dec 2020 & Jan 2021
+WITH UserList AS (
+SELECT *
+     , FORMAT(record_date, 'yyyy-MM') AS year_month
+FROM sf_events
+WHERE record_date >= '2020-12-01' AND record_date <= '2021-01-31'
+)
+--Calculate number of active users in Dec 2020 + Jan 2021 and later months per account
+, UserCount AS (
+SELECT u.account_id
+     , u.year_month
+     , COUNT(DISTINCT u.user_id) AS user_count
+     , COUNT(DISTINCT s.user_id) AS retained_user_count
+FROM UserList AS u
+LEFT JOIN sf_events AS s
+   ON u.user_id = s.user_id
+     AND u.record_date < s.record_date
+GROUP BY u.account_id
+       , u.year_month
+)
+--Calculate the retention of these 2 months
+, Retention AS (
+SELECT account_id 
+     , MAX(CASE WHEN year_month = '2020-12' THEN (retained_user_count*1.0/ user_count) END) AS retention_Dec20
+     , MAX(CASE WHEN year_month = '2021-01' THEN (retained_user_count*1.0/ user_count) END) AS retention_Jan21
+FROM UserCount
+GROUP BY account_id
+)
+SELECT account_id
+     , retention_Jan21/ retention_Dec20 AS retention
+FROM Retention ;
