@@ -1,0 +1,18 @@
+LINK: https://platform.stratascratch.com/coding/10299-finding-updated-records?code_type=5
+
+==> My approach:
+--Identify salary ranking per employee
+WITH SalaryRanking AS (
+SELECT *
+     , RANK() OVER (PARTITION BY id ORDER BY salary DESC) AS salary_ranking
+FROM ms_employee_salary
+)
+--Get the highest salary per employee only
+SELECT id
+     , first_name
+     , last_name
+     , department_id
+     , salary
+FROM SalaryRanking
+WHERE salary_ranking = 1
+ORDER BY id ;
