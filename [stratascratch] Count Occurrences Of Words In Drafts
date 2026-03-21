@@ -1,0 +1,17 @@
+LINK: https://platform.stratascratch.com/coding/9817-find-the-number-of-times-each-word-appears-in-drafts?code_type=5
+TYPE: Medium
+
+==> My approach:
+--Split each word in the contents column into a separate row
+WITH SplitContent AS (
+SELECT g1.filename
+     , TRIM('.,!?;:"()' FROM g2.value) AS split_word
+FROM google_file_store AS g1
+CROSS APPLY STRING_SPLIT(g1.contents, ' ') AS g2
+)
+--Calculate occurrencies per word
+SELECT split_word AS word
+     , COUNT(*) AS occurrences
+FROM SplitContent
+GROUP BY split_word
+ORDER BY occurrences DESC ;
