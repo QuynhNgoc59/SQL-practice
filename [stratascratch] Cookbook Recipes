@@ -1,0 +1,36 @@
+LINK: https://platform.stratascratch.com/coding/2089-cookbook-recipes?code_type=5
+
+==> My approach:
+--Figure out the number of pages of the books
+WITH MaxPageNumber AS (
+SELECT MAX(page_number) AS PagesCount
+FROM cookbook_titles
+)
+--Generate all page numbers for the book
+, PageNumber AS (
+SELECT 0 AS page_number
+UNION ALL 
+SELECT page_number + 1
+FROM PageNumber
+WHERE page_number <= (SELECT PagesCount FROM MaxPageNumber)
+)
+--Get the corresponding title of each odd-numbered page for each even-numbered page
+, TitlePair AS (
+SELECT p.page_number
+     , c.title AS left_title
+     , CASE WHEN p.page_number % 2 = 0 THEN LEAD(c.title) OVER (ORDER BY p.page_number) END AS right_title
+FROM PageNumber AS p
+LEFT JOIN cookbook_titles AS c
+    ON p.page_number = c.page_number
+)
+SELECT page_number
+    , left_title
+    , right_title
+FROM TitlePair
+WHERE page_number % 2 = 0
+GROUP BY page_number
+    , left_title
+    , right_title
+HAVING COUNT(left_title) >= 1
+    OR COUNT(right_title) >= 1
+ORDER BY page_number ;
