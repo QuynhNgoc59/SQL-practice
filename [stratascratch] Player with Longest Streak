@@ -1,0 +1,19 @@
+LINK: https://platform.stratascratch.com/coding/2059-player-with-longest-streak?code_type=5
+
+==> My approach:
+--Give numeric values for each win/loss per user
+WITH IsWinMatch AS (
+SELECT *
+     , CASE WHEN match_result = 'W' THEN 1 ELSE 0 END AS is_win
+FROM players_results
+    )
+--Identify when a streak per user is broken
+, StreakGroup AS (
+SELECT *
+     , SUM(is_win) 
+        OVER(PARTITION BY player_id ORDER BY is_win RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS streak_group
+FROM IsWinMatch
+    )
+select *
+from StreakGroup
+order by player_id, match_date ;
