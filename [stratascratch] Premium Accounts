@@ -1,0 +1,24 @@
+LINK: https://platform.stratascratch.com/coding/2097-premium-acounts?code_type=5
+TYPE: Medium
+
+==> My approach:
+--Calculate the number of premium accounts per date
+WITH PremAccCounts AS (
+SELECT entry_date
+, account_id
+, COUNT(account_id) OVER (PARTITION BY entry_date) AS premium_paid_accounts
+FROM premium_accounts_by_day
+WHERE final_price != 0
+)
+--Calculate the number of premium accounts per date having a 7-day gap from each original date
+SELECT TOP 7 p1.entry_date
+, premium_paid_accounts
+, COUNT(p2.account_id) AS premium_paid_accounts_after_7d
+FROM PremAccCounts AS p1
+JOIN premium_accounts_by_day AS p2
+ON p1.account_id  = p2.account_id
+AND p2.entry_date = DATEADD(day, 7, p1.entry_date)
+AND p2.final_price != 0
+GROUP BY p1.entry_date
+, premium_paid_accounts
+ORDER BY p1.entry_date ;
