@@ -1,0 +1,13 @@
+LINK: https://platform.stratascratch.com/coding/10085-facebook-matching-users-pairs?code_type=5
+
+==> My approach:
+--Find the employees pairs of Meta/Facebook who have the same nation, different age, same gender, and at different seniority levels
+SELECT f1.id AS employee_1
+     , f2.id AS employee_2 
+FROM facebook_employees AS f1 
+    JOIN facebook_employees AS f2 
+        ON f1.location = f2.location
+          AND f1.age != F2.age
+          AND f1.gender = F2.gender
+          AND f1.is_senior != F2.is_senior ;
+    
