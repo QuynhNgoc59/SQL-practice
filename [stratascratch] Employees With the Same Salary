@@ -1,0 +1,19 @@
+LINk: https://platform.stratascratch.com/coding/9856-find-employees-with-the-same-salary?code_type=5
+TYPE: Medium
+
+==> My approach:
+--Filter salaries belonging to more than 1 employees
+WITH samesalary AS (
+    SELECT salary
+    FROM worker
+    GROUP BY salary
+    HAVING COUNT(*) > 1
+)
+--Get employees having the same salary as other ones
+SELECT
+    worker_id,
+    first_name,
+    salary
+FROM worker
+WHERE salary IN (SELECT salary FROM samesalary)
+ORDER BY salary DESC;
