@@ -1,0 +1,10 @@
+LINK: https://platform.stratascratch.com/coding/2172-customers-with-large-orders/solutions?code_type=5
+TYPE: Medium
+
+==> My approach:
+--Find customers with at least 1 order with value > $100
+SELECT DISTINCT c.*
+FROM online_store_customers AS c
+JOIN online_store_orders as o  
+   ON c.customer_id = o.customer_id
+      AND o.amount > 100 ;
