@@ -1,0 +1,13 @@
+LINK: https://platform.stratascratch.com/coding/2170-department-workforce-analysis?code_type=5
+TYPE: Medium
+
+==> My approach:
+--Calcu;ate headcount, workforce, total payroll, avg salary per departments with at least 5 employees hored after 2020
+SELECT department
+     , COUNT(id) AS headcount
+     , SUM(salary) AS total_payroll
+     , AVG(salary*1.0) AS avg_salary
+FROM techcorp_workforce
+WHERE YEAR(joining_date) > 2020
+GROUP BY department
+HAVING COUNT (id) >= 5 ;
