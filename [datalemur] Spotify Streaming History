@@ -1,0 +1,32 @@
+LINK: https://datalemur.com/questions/spotify-streaming-history
+TYPE: Medium
+
+==> My approach:
+--Get full user, song, song plays up to August 4th, 2022
+WITH FullData AS (
+SELECT user_id
+     , song_id
+     , COUNT(*) AS song_plays
+FROM songs_weekly
+WHERE DATE_TRUNC('day', listen_time) BETWEEN '2022-08-01' AND '2022-08-04'
+    
+GROUP BY user_id
+       , song_id
+
+UNION ALL  
+
+SELECT user_id
+     , song_id
+     , SUM(song_plays) AS song_plays
+FROM songs_history 
+GROUP BY user_id
+       , song_id
+)
+--Calculate number of plays per User per Song from Aug 1 to Aug 4
+SELECT user_id
+     , song_id
+     , SUM(song_plays) AS song_plays
+FROM FullData
+GROUP BY user_id
+       , song_id
+ORDER BY song_plays DESC ;
