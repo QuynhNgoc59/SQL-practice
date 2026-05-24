@@ -1,0 +1,20 @@
+LINK: https://datalemur.com/questions/reactivated-users
+TYPE: Hard
+
+==> My approach:
+--Get users who are inactive in the past months
+WITH InactiveUsers AS (
+SELECT u1.user_id
+     , EXTRACT(month FROM u1.login_date) AS mth
+     , u2.login_date
+FROM user_logins AS u1 
+LEFT JOIN user_logins AS u2
+    ON u1.user_id = u2.user_id 
+      AND EXTRACT(month FROM u1.login_date) - EXTRACT(month FROM u2.login_date) = 1
+)
+-- Calculate number of re-activated users per month 
+SELECT mth  
+     , COUNT(DISTINCT user_id) AS reactivated_users
+FROM InactiveUsers
+WHERE login_date IS NULL
+GROUP BY mth ;
