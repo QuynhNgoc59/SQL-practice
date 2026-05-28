@@ -1,0 +1,14 @@
+LINK: https://datalemur.com/questions/patient-call-history
+TYPE: Hard
+
+==> My approach:
+--Calculate day diff between 2 consecutive calls per user 
+WITH DayDiff AS (
+    SELECT *
+         , call_date::date -LEAD(call_date::date) OVER (PARTITION BY policy_holder_id ORDER BY call_date DESC) AS day_diff
+    FROM callers 
+)
+--Filter callers making calls within 7-day period
+SELECT COUNT(DISTINCT policy_holder_id) AS policy_holder_count
+FROM DayDiff
+WHERE day_diff < 7 ;
