@@ -1,0 +1,21 @@
+LINK: https://datalemur.com/questions/long-calls-growth
+TYPE: Hard
+
+==> My approach:
+--Calculate number of long calls per month 
+WITH LongCallCnt AS (
+SELECT EXTRACT (year FROM call_date) AS yr
+     , EXTRACT (month FROM call_date) AS mth
+     , COUNT(case_id) AS long_calls_cnt
+FROM callers 
+WHERE call_duration_secs >= 300
+GROUP BY EXTRACT (year FROM call_date)
+       , EXTRACT (month FROM call_date) 
+)
+--Calculate % growth of long calls throughout the months
+SELECT yr   
+     , mth 
+     , ROUND((long_calls_cnt - LAG(long_calls_cnt) OVER (ORDER BY yr, mth))*1.0/ (LAG(long_calls_cnt) OVER (ORDER BY yr, mth))*100, 1) AS long_calls_growth_pct
+FROM LongCallCnt
+ORDER BY yr   
+       , mth ;
