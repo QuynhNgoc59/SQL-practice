@@ -1,0 +1,24 @@
+LINK: https://datalemur.com/questions/senior-managers-reportees
+TYPE: Hard
+
+==> My approach:
+--Get employees with respective managers, and managers with respective senior managers
+WITH Managers AS (
+  SELECT e1.emp_id
+       , e1.manager_name AS manager_name_lv1
+       , e2.emp_id AS manager_id_lv1
+       , e2.manager_name AS manager_name_lv2
+       , e3.emp_id AS manager_id_lv2
+  FROM employees AS e1
+  JOIN employees AS e2
+      ON e1.manager_id = e2.emp_id
+  JOIN employees AS e3
+      ON e2.manager_id = e3.emp_id
+)
+--Filter managers considered as senior
+SELECT manager_name_lv2 AS manager_name
+     , COUNT(DISTINCT manager_name_lv1) AS direct_reportees
+FROM Managers
+GROUP BY manager_name_lv2
+HAVING COUNT(*) >= 1
+ORDER BY direct_reportees DESC ;
