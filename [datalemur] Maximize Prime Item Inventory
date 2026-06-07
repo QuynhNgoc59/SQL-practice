@@ -1,0 +1,28 @@
+LINK: https://datalemur.com/questions/prime-warehouse-storage
+TYPE: Hard
+
+==> My approach:
+--Calculate number of square foot & items per item group
+WITH PrimeItemCal AS (
+SELECT item_type
+     , SUM(square_footage) AS total_sf
+     , COUNT(*) AS item_count
+FROM inventory
+GROUP BY item_type 
+)
+--Calculate number of prime batches & prime items required for 500,000 square-foot warehouse
+, prime_occupied_area AS (  
+  SELECT  
+    item_type,
+    total_sf,
+    FLOOR(500000/total_sf) AS prime_item_batch_count,
+    (FLOOR(500000/total_sf) * item_count) AS prime_item_count
+  FROM PrimeItemCal  
+  WHERE item_type = 'prime_eligible'
+)
+--Calculate squire foot left for non-prime items
+SELECT item_type 
+     , CASE WHEN item_type = 'prime_eligible' THEN FLOOR(500000/total_sf)*item_count
+            WHEN item_type = 'not_prime' THEN FLOOR((500000 - (SELECT FLOOR(500000/total_sf) * total_sf FROM prime_occupied_area)) / total_sf) * item_count
+        END AS item_count
+FROM PrimeItemCal ;
