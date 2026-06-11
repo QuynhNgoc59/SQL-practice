@@ -1,0 +1,49 @@
+LINK: https://leetcode.com/problems/find-users-with-persistent-behavior-patterns/
+TYPE: Hard
+
+==> My approach:
+--Order the action per user per action
+WITH ActionOrder AS (
+    SELECT *
+         , ROW_NUMBER() OVER (PARTITION BY user_id, action ORDER BY action_date) AS rn 
+    FROM activity
+)
+--Identify streak group per user per action
+, StreakGroup AS (
+    SELECT *
+         , DATEADD(day, -rn, action_date) AS streak_group
+    FROM ActionOrder
+)
+--Find users with at least 5 consecutive days of the same action
+, PersistentUser AS (
+    SELECT user_id
+         , action
+         , streak_group  
+         , COUNT(*) AS streak_length 
+         , MIN(action_date) AS start_date    
+         , MAX(action_date) AS end_date   
+    FROM StreakGroup
+    GROUP BY user_id
+           , action
+           , streak_group  
+    HAVING COUNT(*) >= 5
+)
+--Return 1 row per user with highest streak only
+, DistinctAction AS (
+    SELECT user_id
+         , action
+         , streak_length
+         , start_date 
+         , end_date
+         , ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY streak_length DESC) AS streak_length_rn
+    FROM PersistentUser
+)
+SELECT user_id
+     , action
+     , streak_length
+     , start_date 
+     , end_date
+FROM DistinctAction
+WHERE streak_length_rn = 1
+ORDER BY streak_length DESC
+       , user_id ;
