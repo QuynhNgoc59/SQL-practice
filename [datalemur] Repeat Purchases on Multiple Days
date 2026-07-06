@@ -1,0 +1,14 @@
+LINK: https://datalemur.com/questions/sql-repeat-purchases
+TYPE: Medium
+
+==> My approach:
+--Identify repeated purchases per user
+WITH RepeatedPurchases AS(
+SELECT *
+     , DENSE_RANK() OVER (PARTITION BY user_id, product_id ORDER BY DATE(purchase_date) ) AS rn
+FROM purchases
+)
+--Calculate numbers of users making  repeated purchases
+SELECT COUNT(DISTINCT user_id) AS repeat_purchasers
+FROM RepeatedPurchases
+WHERE rn >= 2 ;
