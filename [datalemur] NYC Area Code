@@ -1,0 +1,18 @@
+LINK: https://datalemur.com/questions/nyc-area-code
+TYPE: Medium
+
+==> My aproach:
+--Identify phone calls have either a caller or receiver with a phone number with a Manhattan NYC area code
+WITH NycPhoneCalls AS (
+SELECT *
+FROM phone_calls AS p  
+LEFT JOIN phone_info as i1
+  ON p.caller_id = i1.caller_id
+LEFT JOIN phone_info as i2
+  ON p.receiver_id = i2.caller_id
+WHERE LEFT(i1.phone_number, 6) = '+1-212'
+    OR LEFT(i2.phone_number, 6) = '+1-212'
+)
+--Calculate number of NYC phone calls
+SELECT COUNT(*) AS nyc_count
+FROM NycPhoneCalls
