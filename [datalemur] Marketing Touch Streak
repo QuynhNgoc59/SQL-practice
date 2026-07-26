@@ -1,0 +1,39 @@
+LINK: https://datalemur.com/questions/marketing-touch-streak
+TYPE: Hard
+
+==> My approach:
+--Identify contacts with at least one marketing touch of the type 'trial_request'
+WITH TrialRequest AS (
+SELECT contact_id
+FROM marketing_touches
+WHERE event_type = 'trial_request'
+GROUP BY contact_id
+HAVING COUNT(*) >= 1
+)
+--Order the events chronologically
+, EventOrder AS (
+SELECT *
+     , EXTRACT (week FROM event_date) AS week_num
+     , ROW_NUMBER() OVER (PARTITION BY contact_id ORDER BY event_date, EXTRACT (week FROM event_date)) AS rn
+FROM marketing_touches 
+)
+--Find week groups of events per contact
+, ConsecutiveWeeks AS (
+SELECT *
+     , week_num - rn AS week_group
+FROM EventOrder
+)
+--Find contacts with at least 3 consecutive weeks
+SELECT c2.email
+FROM ConsecutiveWeeks AS c1
+LEFT JOIN crm_contacts AS c2
+  ON c1.contact_id = c2.contact_id
+WHERE EXISTS (
+    SELECT 1
+    FROM TrialRequest AS t
+    WHERE c1.contact_id = t.contact_id
+    )
+GROUP BY c1.contact_id
+       , c1.week_group
+       , c2.email
+HAVING COUNT(*) >= 3 ;
