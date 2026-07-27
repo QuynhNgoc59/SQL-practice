@@ -1,0 +1,6 @@
+LINK: https://datalemur.com/questions/sql-average-deal-size
+TYPE: Easy
+
+==> My approach:
+SELECT ROUND(AVG(yearly_seat_cost*num_seats*1.0), 2) average_deal_size
+FROM contracts;
