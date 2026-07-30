@@ -1,0 +1,21 @@
+LINK: https://platform.stratascratch.com/coding/2110-salary-less-than-twice-the-average?code_type=5
+TYPE: Medium
+
+==> My approach:
+--Get avg employees salary per manager
+WITH AvgSalary AS (
+    SELECT m.manager_empl_id AS manager_salary
+         , d2.salary 
+         , AVG(d1.salary) AS avg_employee_salary
+    FROM map_employee_hierarchy AS m
+    LEFT JOIN dim_employee AS d1
+       ON m.empl_id = d1.empl_id
+    LEFT JOIN dim_employee AS d2
+       ON m.manager_empl_id = d2.empl_id
+    GROUP BY m.manager_empl_id
+           , d2.salary
+)
+--Filter managers with 2x avg employees salary
+SELECT *
+FROM AvgSalary
+WHERE salary < (2*avg_employee_salary) ;
