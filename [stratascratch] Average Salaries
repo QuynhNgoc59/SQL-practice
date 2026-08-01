@@ -1,0 +1,9 @@
+LINK: https://platform.stratascratch.com/coding/9917-average-salaries?code_type=5
+TYPE: Easy
+
+==> My approach:
+SELECT department
+     , first_name
+     , salary
+     , AVG(salary) OVER (PARTITION BY department) AS avg_salary
+FROM employee ;
