@@ -1,0 +1,6 @@
+LINK: https://platform.stratascratch.com/coding/10005-hour-of-highest-gas-expense?code_type=5
+TYPE: Easy
+
+==> My approach:
+SELECT TOP 1 FIRST_VALUE(hour) OVER(ORDER BY gasoline_cost DESC) AS hour
+FROM lyft_rides ;
