@@ -1,0 +1,18 @@
+LINK: https://platform.stratascratch.com/coding/2101-maximum-of-two-numbers?code_type=5
+TYPE: Medium
+
+==> My approach:
+--Return all possible combinations of 2 numbers
+WITH Permuataions AS (
+SELECT d1.number AS number1
+     , d2.number AS number2
+FROM deloitte_numbers AS d1
+CROSS JOIN deloitte_numbers AS d2
+)
+-- Find the maximum number between each pair
+SELECT *
+     , CASE WHEN number1 > number2 THEN number1 ELSE number2 END AS max_number
+FROM Permuataions
+ORDER BY number2
+       , number1 ;
+
