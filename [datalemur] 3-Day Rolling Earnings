@@ -1,0 +1,18 @@
+LINK: https://datalemur.com/questions/3d-rolling-earnings
+TYPE: Hard
+
+==> My approach:
+--Calculate total amount per user per day 
+WITH DailyAmount AS (
+  SELECT user_id 
+      , transaction_date::date AS transaction_date
+      , SUM(amount) AS total_amount
+  FROM user_transactions
+  GROUP BY user_id 
+        , transaction_date::date
+)
+--Calculate total amount per user per rolling 3 days
+SELECT user_id
+    , transaction_date
+    , SUM(total_amount) OVER (PARTITION BY user_ID ORDER BY transaction_date RANGE BETWEEN INTERVAL '2 days' PRECEDING AND CURRENT ROW) AS rolling_earnings_3d
+FROM DailyAmount ;
