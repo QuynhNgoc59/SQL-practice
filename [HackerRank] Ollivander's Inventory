@@ -1,0 +1,25 @@
+LINK: https://www.hackerrank.com/challenges/harry-potter-and-wands/problem?isFullScreen=true
+TYPE: Medium
+
+==> My approach:
+--Identify rankings for non-evil wands based on need coins & power
+WITH WandRanking AS (
+    SELECT w.id 
+         , p.age
+         , w.coins_needed
+         , w.power
+         , ROW_NUMBER() OVER (PARTITION BY w.code, w.power ORDER BY w.coins_needed, w.power DESC) AS wand_ranking
+    FROM Wands AS w 
+    JOIN Wands_Property AS p 
+        ON w.code = p.code
+          AND p.is_evil = 0
+)
+--Get wands with ranking = 1 only
+SELECT id 
+     , age
+     , coins_needed
+     , power
+FROM WandRanking
+WHERE wand_ranking = 1 
+ORDER BY power DESC   
+       , age DESC ;
