@@ -1,0 +1,37 @@
+LINK: https://www.hackerrank.com/challenges/challenges/problem?isFullScreen=true
+LEVEL: Medium 
+
+==> My approach:
+--Calculate the number of challenges created per hacker
+WITH ChallengeCount AS (
+    SELECT h.hacker_id
+         , h.name 
+         , COUNT(*) AS challenge_count
+    FROM Hackers AS h  
+    JOIN Challenges AS c 
+       ON h.hacker_id = c.hacker_id 
+    GROUP BY h.hacker_id
+           , h.name
+)
+--Get unique challenge count
+, UniqueChallengeCnt AS (
+    SELECT challenge_count
+    FROM ChallengeCount
+    GROUP BY challenge_count
+    HAVING COUNT(*) = 1 
+)
+--Include hackers with unique challenge count & no duplicate challenge count less than total challenge count
+SELECT hacker_id
+     , name 
+     , challenge_count
+FROM ChallengeCount AS c
+WHERE challenge_count IN (
+    SELECT challenge_count
+    FROM UniqueChallengeCnt
+)
+  OR challenge_count = (
+    SELECT MAX(challenge_count)
+    FROM ChallengeCount
+  )
+ORDER BY challenge_count DESC 
+       , hacker_id ;
