@@ -1,0 +1,33 @@
+LINK: https://www.hackerrank.com/challenges/full-score/problem?isFullScreen=true
+TYPE: Medium
+
+==> My approach:
+SET NOCOUNT ON;
+
+--Get full info of submissions, hackers, challenges
+WITH SubInfo AS (
+    SELECT s.submission_id 
+         , s.hacker_id
+         , h.name
+         , s.challenge_id 
+         , s.score
+         , d.score AS max_score
+    FROM Submissions AS s  
+    JOIN Hackers AS h 
+       ON s.hacker_id = h.hacker_id 
+    JOIN Challenges AS c 
+       ON s.challenge_id = c.challenge_id
+    JOIN Difficulty AS d  
+       ON c.difficulty_level = d.difficulty_level
+)
+--Filter hackers who achieved full scores for more than one challenge + sort the result in accordance with requirements
+SELECT hacker_id
+     , name
+FROM SubInfo
+WHERE score = max_score
+GROUP BY hacker_id
+       , name
+HAVING COUNT(*) > 1
+ORDER BY COUNT(*) DESC
+       , hacker_id
+       , name ;
