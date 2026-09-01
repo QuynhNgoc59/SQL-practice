@@ -1,0 +1,23 @@
+LINK: https://www.hackerrank.com/challenges/sql-projects/problem?isFullScreen=true
+TYPE: Medium
+
+==> My approach:
+--Give each records of end_date an order
+WITH RowNumber AS (
+    SELECT * 
+        , ROW_NUMBER() OVER (ORDER BY end_date) AS rn
+    FROM Projects
+)
+--Find the date group among tasks
+, DateGap AS (
+    SELECT *
+         , DATEADD(day, -rn, end_date) AS date_group
+    FROM RowNumber
+)
+--Find the start & end date per project + return output in a specific orders as in requirements
+SELECT MIN(start_date) AS start_date
+     , MAX(end_date) AS end_date
+FROM DateGap
+GROUP BY date_group
+ORDER BY DATEDIFF(day, MIN(start_date), MAX(end_date))
+       , MIN(start_date) ;
