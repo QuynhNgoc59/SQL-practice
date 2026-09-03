@@ -1,0 +1,11 @@
+LINK: https://www.hackerrank.com/challenges/weather-observation-station-20/problem?isFullScreen=true
+TYPE: Medium
+
+==> My approach:
+--Find the middle value in the sorted LAT_N
+SELECT DISTINCT CAST(
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY LAT_N) OVER()
+        AS DECIMAL(18, 4)
+    )
+    AS median
+FROM STATION ;
