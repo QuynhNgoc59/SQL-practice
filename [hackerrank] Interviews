@@ -1,0 +1,45 @@
+LINK: https://www.hackerrank.com/challenges/interviews/problem?isFullScreen=true
+TYPE: Hard
+
+==> My approach:
+--Calculate total submissions per challenge
+WITH AggregatedSub AS (
+    SELECT challenge_id
+         , SUM(total_submissions) AS total_submissions
+         , SUM(total_accepted_submissions) AS total_accepted_submissions
+    FROM submission_stats
+    GROUP BY challenge_id 
+)
+--Calculate total views per challenge
+, AggregatedView AS (
+    SELECT challenge_id
+         , SUM(total_views) AS total_views
+         , SUM(total_unique_views) AS total_unique_views
+    FROM View_Stats
+    GROUP BY challenge_id 
+)
+--Return all respective info per contest 
+    SELECT c1.contest_id
+         , c1.hacker_id
+         , c1.name
+         , SUM(s.total_submissions) AS total_submissions
+         , SUM(s.total_accepted_submissions) AS total_accepted_submissions
+         , SUM(v.total_views) AS total_views
+         , SUM(v.total_unique_views) AS total_views
+    FROM Contests AS c1
+    JOIN Colleges AS c2
+       ON c1.contest_id = c2.contest_id
+    JOIN Challenges AS c3
+       ON c2.college_id = c3.college_id
+    LEFT JOIN AggregatedSub AS s 
+       ON c3.challenge_id = s.challenge_id
+    LEFT JOIN AggregatedView AS v 
+       ON c3.challenge_id = v.challenge_id
+    GROUP BY c1.contest_id
+           , c1.hacker_id
+           , c1.name
+    HAVING SUM(s.total_submissions) != 0
+         OR SUM(s.total_accepted_submissions) != 0
+         OR SUM(v.total_views) != 0
+         OR SUM(v.total_unique_views) != 0
+    ORDER BY c1.contest_id ;
