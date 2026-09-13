@@ -1,0 +1,6 @@
+LINK: https://platform.stratascratch.com/coding/2169-contact-information-completeness?code_type=5
+TYPE: Easy
+
+==> My approach:
+SELECT COUNT(CASE WHEN phone_number IS NULL THEN 1 END)*1.0 / (SELECT COUNT(*) FROM techcorp_workforce) AS null_phone_ratio
+FROM techcorp_workforce;
