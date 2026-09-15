@@ -1,0 +1,34 @@
+LINK: https://www.namastesql.com/coding-problem/118-user-session-activity
+TYPE: Hard
+
+==> My approach:
+--Identify if an event is the consecutive event of the previous one 
+WITH TimeDiff AS (
+	SELECT *
+         , LAG(event_time) OVER( PARTITION BY userid ORDER BY event_time) AS prev_event_time    
+         , CASE WHEN 
+	                DATEDIFF(minute, LAG(event_time) OVER( PARTITION BY userid ORDER BY event_time), event_time) <= 30 THEN 0
+	                ELSE 1
+	                END
+		    AS is_new_session
+    FROM events
+	)
+--Generate an ID per session group
+ , SessionGroup AS (
+	SELECT *
+	     , SUM(is_new_session) OVER (PARTITION BY userid ORDER BY event_time) AS session_id           
+ 	FROM TimeDiff
+	)
+--Calculate duration, max event time, min event time, number of events per session
+	SELECT userid      
+	     , session_id
+		 , MIN(event_time) AS session_start_time      
+		 , MAX(event_time) AS session_end_time        
+		 , DATEDIFF(minute, MIN(event_time), MAX(event_time)) AS session_duration 
+		 , COUNT(*) AS event_count
+	FROM SessionGroup
+	GROUP BY userid      
+	       , session_id
+    ORDER BY userid      
+	       , session_id ;
+	     
