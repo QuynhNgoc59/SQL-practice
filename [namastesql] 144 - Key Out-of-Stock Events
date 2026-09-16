@@ -1,0 +1,43 @@
+LINK: https://www.namastesql.com/coding-problem/144-key-out-of-stock-events?question_type=0&page=1&complete_status=0&category_id=EDDF0D897D20E899
+TYPE: Very hard
+
+==> My approach:
+--Order the record by date per MASTER_ID, MARKETPLACE_ID
+WITH OrderedEvents AS (
+	SELECT * 
+         , ROW_NUMBER() OVER (PARTITION BY MASTER_ID, MARKETPLACE_ID ORDER BY OOS_DATE) AS rn
+	FROM DETAILED_OOS_EVENTS
+	)
+--Find the date with a gap of at least 7 days from the first one, and repeat this process for later events dynamically
+, RecursiveEvents AS (
+    SELECT MASTER_ID 
+	     , MARKETPLACE_ID 
+	     , OOS_DATE        
+	     , rn
+	     , 1 AS valid_flag
+	FROM OrderedEvents
+	WHERE rn = 1
+	
+	UNION ALL
+	
+	SELECT o.MASTER_ID 
+	     , o.MARKETPLACE_ID 
+	     , CASE WHEN o.OOS_DATE >= DATEADD(DAY, 7, r.OOS_DATE) THEN o.OOS_DATE ELSE r.OOS_DATE END AS OOS_DATE   
+	     , o.rn
+	     , CASE WHEN o.OOS_DATE >= DATEADD(day, 7, r.OOS_DATE) THEN 1 ELSE 0 END AS valid_flag
+	FROM OrderedEvents AS o 
+	INNER JOIN RecursiveEvents AS r 
+	   ON o.MASTER_ID = r.MASTER_ID
+	     AND o.MARKETPLACE_ID = r.MARKETPLACE_ID
+	     AND o.rn = r.rn + 1
+)
+--Filter events meeting the date requirements
+SELECT MASTER_ID
+     , MARKETPLACE_ID
+     , OOS_DATE 
+FROM RecursiveEvents
+WHERE valid_flag = 1
+ORDER BY MASTER_ID
+       , MARKETPLACE_ID
+       , OOS_DATE ;      
+     
