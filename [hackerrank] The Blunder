@@ -1,0 +1,13 @@
+LINK: https://www.hackerrank.com/challenges/the-blunder/problem?isFullScreen=true
+TYPE: Easy
+
+==> My approach:
+--Calculate avg salary with mis-input data
+WITH WithoutZero AS (
+    SELECT AVG(Salary*1.0) AS avg_salary
+         , AVG(CAST(REPLACE(CAST(Salary AS VARCHAR(20)), '0', '') AS INT)*1.0) AS avg_incorrect_salary
+    FROM EMPLOYEES
+)
+--Calculate the difference between actual avg salary & the miscalculated one
+SELECT CEILING(avg_salary - avg_incorrect_salary)
+FROM WithoutZero ;
